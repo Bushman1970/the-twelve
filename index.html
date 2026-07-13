@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>The Twelve — D Group Companion</title>
+<style>
+  :root{
+    --bg:#0b0d12; --panel:#151823; --panel2:#1d2233; --line:rgba(255,255,255,.10);
+    --line2:rgba(255,255,255,.20); --text:#f1ece2; --muted:#aeb4c0; --faint:#7b8493;
+    --gold:#d8b87a; --gold-soft:#c19a5e; --blue:#8cc0e2; --terra:#d68e77;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --serif:Georgia,"Iowan Old Style","Times New Roman",serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;line-height:1.45;overflow-x:hidden}
+  .view{padding:clamp(16px,2.4vh,40px) clamp(20px,3vw,70px)}
+  .hidden{display:none!important}
+  .kicker{color:var(--gold-soft);letter-spacing:.3em;text-transform:uppercase;
+    font-size:clamp(10px,1.3vh,15px);font-weight:600}
+
+  /* ---------- HOME — locked to one screen, scales with viewport height ---------- */
+  #home{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    max-width:2400px;margin:0 auto}
+  .head{flex:0 0 auto;margin-bottom:clamp(6px,1.4vh,18px)}
+  .title{font-family:var(--serif);font-weight:600;line-height:1.02;
+    font-size:clamp(1.9rem,5vh,4.6rem)}
+  .title .em{color:var(--gold)}
+  .lede{color:var(--muted);font-size:clamp(.8rem,1.7vh,1.4rem);margin-top:.35em;max-width:120ch}
+  .lede b{color:var(--text);font-weight:500}
+
+  .groups{min-height:0;display:flex;gap:clamp(12px,1.5vw,28px)}
+  .group{flex:1 1 0;min-width:0;display:flex;flex-direction:column;min-height:0;gap:clamp(7px,1vh,14px)}
+  .group-h{flex:0 0 auto;padding-bottom:clamp(4px,.8vh,9px);border-bottom:1px solid var(--line)}
+  .group-h .g-name{font-size:clamp(.95rem,2.05vh,1.85rem);font-weight:500}
+  .group-h .g-sub{font-size:clamp(.66rem,1.2vh,1rem);color:var(--faint);margin-top:2px}
+
+  .card{flex:0 0 auto;background:var(--panel);border:1px solid var(--line);
+    border-radius:clamp(8px,1vh,14px);padding:clamp(8px,1.4vh,20px) clamp(11px,1.1vw,22px);
+    cursor:pointer;display:flex;flex-direction:column;justify-content:center;overflow:hidden;
+    transition:transform .14s ease,border-color .14s ease,background .14s ease}
+  .card:hover,.card:focus-visible{transform:translateY(-2px);border-color:var(--line2);
+    background:var(--panel2);outline:none}
+  .card.inner{border-left:3px solid var(--blue)}
+  .card.betrayer{border-left:3px solid var(--terra)}
+  .c-num{font-size:clamp(.6rem,1.1vh,.92rem);color:var(--faint);letter-spacing:.18em}
+  .c-name{font-family:var(--serif);font-weight:600;line-height:1.08;color:var(--text);
+    font-size:clamp(1.02rem,2.45vh,2.3rem);margin:.12em 0 .2em;overflow-wrap:break-word;hyphens:auto}
+  .c-hook{font-size:clamp(.76rem,1.6vh,1.4rem);color:var(--muted);line-height:1.25}
+  .pills{margin-top:clamp(5px,1vh,12px);display:flex;flex-wrap:wrap;gap:5px}
+  .pill{font-size:clamp(.58rem,1.15vh,.95rem);padding:2px 8px;border-radius:999px;
+    border:1px solid var(--line);color:var(--faint);white-space:nowrap}
+  .pill.b-inner{color:var(--blue);border-color:var(--blue)}
+  .pill.b-betray{color:var(--terra);border-color:var(--terra)}
+
+  .home-foot{flex:0 0 auto;margin-top:clamp(8px,1.6vh,20px)}
+  .patterns{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.2vw,22px)}
+  .pat{border-left:2px solid var(--gold-soft);padding-left:clamp(8px,.8vw,14px)}
+  .pat h4{font-size:clamp(.72rem,1.35vh,1.1rem);font-weight:500;color:var(--gold);margin-bottom:2px}
+  .pat p{font-size:clamp(.64rem,1.15vh,.98rem);color:var(--muted);line-height:1.3}
+  .hint{margin-top:clamp(6px,1.1vh,14px);color:var(--faint);font-size:clamp(.66rem,1.1vh,.95rem)}
+  .hint kbd{border:1px solid var(--line2);border-radius:4px;padding:0 6px;color:var(--muted);font-size:.92em}
+
+  /* portrait / narrow: relax the locked height and stack */
+  @media (max-aspect-ratio:13/10){
+    #home{height:auto;overflow:visible}
+    .groups{flex-direction:column}
+    .group{flex:0 0 auto}
+    .card{flex:0 0 auto}
+    .patterns{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:680px){ .patterns{grid-template-columns:1fr} }
+
+  /* ---------- DETAIL — centered reading column, scales up ---------- */
+  #detail{min-height:100vh;display:flex;flex-direction:column;max-width:1600px;margin:0 auto}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    margin-bottom:clamp(12px,2vh,26px)}
+  .btn{background:var(--panel);border:1px solid var(--line2);color:var(--text);
+    border-radius:10px;padding:clamp(8px,1vh,13px) clamp(13px,1.1vw,22px);cursor:pointer;
+    font-family:var(--sans);font-size:clamp(.85rem,1.5vh,1.25rem);
+    transition:background .14s,border-color .14s}
+  .btn:hover{background:var(--panel2);border-color:var(--blue)}
+  .nav-right{display:flex;gap:10px;align-items:center}
+  .session-tag{color:var(--faint);font-size:clamp(.78rem,1.4vh,1.15rem);letter-spacing:.14em;text-transform:uppercase}
+
+  .d-head{margin-bottom:clamp(14px,2vh,26px)}
+  .d-name{font-family:var(--serif);font-weight:600;line-height:1.04;color:var(--text);
+    font-size:clamp(2.1rem,6vh,5rem);overflow-wrap:break-word;hyphens:auto}
+  .d-name.is-betray{color:var(--terra)}
+  .d-hook{color:var(--gold);font-family:var(--serif);font-style:italic;
+    font-size:clamp(1.1rem,2.6vh,2.4rem);margin-top:.3em}
+  .d-roles{margin-top:clamp(8px,1.3vh,14px);display:flex;flex-wrap:wrap;gap:8px}
+  .d-roles .pill{font-size:clamp(.66rem,1.3vh,1rem)}
+
+  .tabs{display:flex;gap:10px;margin-bottom:clamp(14px,2vh,26px)}
+  .tab{background:transparent;border:1px solid var(--line2);color:var(--muted);border-radius:999px;
+    padding:clamp(8px,1.1vh,14px) clamp(18px,1.6vw,34px);cursor:pointer;
+    font-family:var(--sans);font-size:clamp(.9rem,1.7vh,1.45rem);transition:all .14s}
+  .tab.active{background:var(--gold);color:#1a1408;border-color:var(--gold);font-weight:500}
+  .tab:hover:not(.active){border-color:var(--blue);color:var(--text)}
+
+  .pane{display:none}
+  .pane.show{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .verses{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:clamp(14px,1.6vw,26px);margin-bottom:clamp(18px,2.4vh,34px)}
+  .verse{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
+    border-radius:0 12px 12px 0;padding:clamp(15px,1.8vh,26px)}
+  .vtext{font-family:var(--serif);font-size:clamp(1.05rem,2vh,1.85rem);line-height:1.4}
+  .vref{margin-top:.5em;color:var(--gold-soft);font-size:clamp(.8rem,1.4vh,1.15rem);letter-spacing:.06em}
+  .profile{font-size:clamp(1.05rem,2vh,1.7rem);color:var(--muted);line-height:1.6;
+    max-width:70ch;margin-bottom:clamp(18px,2.4vh,32px)}
+  .guard{background:rgba(216,184,122,.09);border:1px solid rgba(216,184,122,.32);
+    border-radius:14px;padding:clamp(15px,2vh,28px);max-width:84ch}
+  .g-label{color:var(--gold);font-size:clamp(.72rem,1.3vh,1.05rem);letter-spacing:.2em;
+    text-transform:uppercase;margin-bottom:.5em}
+  .guard p{font-size:clamp(1.05rem,2vh,1.7rem);color:var(--text);line-height:1.5}
+
+  .questions{list-style:none;display:flex;flex-direction:column;gap:clamp(12px,1.6vh,22px);max-width:92ch}
+  .questions li{display:flex;gap:clamp(14px,1.4vw,26px);align-items:flex-start;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:clamp(14px,1.8vh,26px) clamp(16px,1.5vw,30px)}
+  .q-n{flex:0 0 auto;font-family:var(--serif);color:var(--gold);font-weight:600;line-height:1;
+    font-size:clamp(1.5rem,3vh,2.8rem);min-width:1.4ch}
+  .q-t{font-size:clamp(1.05rem,2vh,1.85rem);color:var(--text);line-height:1.4}
+  .foot{margin-top:auto;padding-top:clamp(16px,2vh,30px);color:var(--faint);
+    font-size:clamp(.72rem,1.2vh,1rem);display:flex;justify-content:space-between;gap:14px}
+</style>
+</head>
+<body>
+
+<!-- ============ HOME ============ -->
+<section id="home" class="view">
+  <header class="head">
+    <span class="kicker">A D Group series</span>
+    <h1 class="title">The <span class="em">Twelve</span></h1>
+    <p class="lede">Jesus chose and named all twelve (Mark 3:13&ndash;19). The Gospels list them in <b>three fixed groups of four</b> &mdash; the first name in each never changes, and Judas is always last.</p>
+  </header>
+
+  <main class="groups" id="groups"></main>
+
+  <footer class="home-foot">
+    <div class="patterns">
+      <div class="pat"><h4>Two sets of brothers</h4><p>Peter &amp; Andrew, James &amp; John &mdash; whole families off the same boats.</p></div>
+      <div class="pat"><h4>Person to person</h4><p>Andrew brought Peter; Philip brought Nathanael &mdash; invitation from day one.</p></div>
+      <div class="pat"><h4>Enemies at one table</h4><p>Matthew collected taxes for Rome; Simon burned to drive it out.</p></div>
+      <div class="pat"><h4>The inner three</h4><p>Peter, James &amp; John alone saw the Transfiguration &mdash; and were taken deepest into Gethsemane.</p></div>
+    </div>
+    <p class="hint">Tap any disciple to open his night &nbsp;&middot;&nbsp; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between disciples &nbsp;&middot;&nbsp; <kbd>&uarr;</kbd> <kbd>&darr;</kbd> switch tabs &nbsp;&middot;&nbsp; <kbd>Esc</kbd> back to the map.</p>
+  </footer>
+</section>
+
+<!-- ============ DETAIL ============ -->
+<section id="detail" class="view hidden">
+  <div class="topbar">
+    <button class="btn" id="backBtn" aria-label="Back to all twelve">&larr; All twelve</button>
+    <div class="nav-right">
+      <span class="session-tag" id="sessionTag"></span>
+      <button class="btn" id="prevBtn" aria-label="Previous disciple">&larr;</button>
+      <button class="btn" id="nextBtn" aria-label="Next disciple">&rarr;</button>
+    </div>
+  </div>
+
+  <div class="d-head">
+    <h2 class="d-name" id="dName"></h2>
+    <div class="d-hook" id="dHook"></div>
+    <div class="d-roles" id="dRoles"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-pane="man">The man</button>
+    <button class="tab" data-pane="talk">Talk it over</button>
+  </div>
+
+  <div class="pane show" id="pane-man">
+    <div class="verses" id="dVerses"></div>
+    <p class="profile" id="dProfile"></p>
+    <div class="guard"><div class="g-label">Keep the eyes on Christ</div><p id="dGuard"></p></div>
+  </div>
+
+  <div class="pane" id="pane-talk">
+    <ol class="questions" id="dQuestions"></ol>
+  </div>
+
+  <div class="foot">
+    <span>The Twelve &mdash; a D Group series</span>
+    <span id="footName"></span>
+  </div>
+</section>
+
+<script>
+const GROUPS = {
+  1:{name:"Group one &mdash; the fishermen", sub:"led by Peter · most named in the Gospels"},
+  2:{name:"Group two &mdash; the seekers", sub:"led by Philip · questioners and finders"},
+  3:{name:"Group three &mdash; the quiet faithful", sub:"led by James (Alphaeus) · least mentioned; Judas always last"}
+};
+
+const D = [
+  { id:"peter", n:"Simon Peter", session:1, group:1, inner:true, betrayer:false,
+    roles:["inner three","fisherman","Peter &amp; Andrew, brothers"],
+    hook:"The man who failed loudest and was restored fully.",
+    verses:[
+      {t:"&ldquo;You are the Christ, the Son of the living God.&rdquo;", r:"Matthew 16:16"},
+      {t:"&ldquo;I have prayed for you that your faith may not fail.&rdquo;", r:"Luke 22:32"},
+      {t:"&ldquo;Lord, you know everything; you know that I love you.&rdquo;", r:"John 21:17"}
+    ],
+    profile:"A fisherman from Bethsaida and the spokesman of the Twelve. He walked on water then sank, confessed Christ then denied him three times. Jesus restored him on the beach over a charcoal fire and sent him: &ldquo;Feed my sheep.&rdquo; At Pentecost the man who denied Christ preached and three thousand believed; later he opened the gospel to the Gentiles.",
+    guard:"The lesson is not &ldquo;be bold like Peter&rdquo; &mdash; his boldness is exactly what failed. It is that Jesus prayed for him before he fell and came looking for him after. We rest in Christ&rsquo;s grip, not our own grit.",
+    questions:[
+      "Peter had huge faith and a huge failure in the same week. Where do you notice that same mix in your own walk?",
+      "Jesus renamed Simon &ldquo;Rock&rdquo; before he acted like one. What does it do to you that Jesus calls you by who you&rsquo;ll become?",
+      "Peter denied Jesus by a charcoal fire and was restored by another one. Has Jesus ever met you right at the scene of a failure?",
+      "Jesus asked &ldquo;Do you love me?&rdquo; &mdash; not &ldquo;Are you sorry?&rdquo; Why love first? What does that reveal about how he restores people?",
+      "&ldquo;Feed my sheep&rdquo; was given to a man fresh off failure. Where is Jesus calling you to serve from restored grace, not a proven track record?"
+    ]},
+
+  { id:"andrew", n:"Andrew", session:2, group:1, inner:false, betrayer:false,
+    roles:["fisherman","Peter&rsquo;s brother","the connector"],
+    hook:"The quiet connector who always brings people to Jesus.",
+    verses:[
+      {t:"He first found his own brother Simon &hellip; and he brought him to Jesus.", r:"John 1:41&ndash;42"},
+      {t:"&ldquo;There is a boy here who has five barley loaves and two fish.&rdquo;", r:"John 6:8&ndash;9"}
+    ],
+    profile:"Peter&rsquo;s brother and a fisherman, first a follower of John the Baptist. He lived in the shadow of his famous brother, yet every time he appears in John&rsquo;s Gospel he is bringing someone to Jesus &mdash; Peter, the boy with the loaves, and the inquiring Greeks.",
+    guard:"Faithfulness isn&rsquo;t measured by platform. Andrew&rsquo;s quiet, unglamorous introductions put the leader of the church in front of Jesus. The kingdom runs on Andrews.",
+    questions:[
+      "Andrew spent his life in the shadow of his more famous brother. How do you handle being &ldquo;the lesser-known one&rdquo; in a family, job, or friendship?",
+      "Every time we meet Andrew he&rsquo;s bringing someone to Jesus. Who first brought you? Who might you be an &ldquo;Andrew&rdquo; to?",
+      "Andrew offered a boy&rsquo;s small lunch, unsure it mattered. What &ldquo;small&rdquo; thing have you hesitated to offer because it felt too little?",
+      "Where are you tempted to measure your worth by visibility rather than faithfulness?",
+      "What would change this week if you saw introducing people to Jesus as your main job, the way Andrew did?"
+    ]},
+
+  { id:"jamesz", n:"James, son of Zebedee", session:3, group:1, inner:true, betrayer:false,
+    roles:["inner three","Son of Thunder","John&rsquo;s brother"],
+    hook:"Raw ambition refined &mdash; the first apostle to die.",
+    verses:[
+      {t:"&hellip; Boanerges, that is, Sons of Thunder.", r:"Mark 3:17"},
+      {t:"&ldquo;Grant us to sit, one at your right hand and one at your left, in your glory.&rdquo;", r:"Mark 10:37"},
+      {t:"He killed James the brother of John with the sword.", r:"Acts 12:2"}
+    ],
+    profile:"With his brother John, nicknamed &ldquo;Son of Thunder&rdquo; for fiery zeal &mdash; the two once wanted to call down fire on a village. He asked Jesus for a throne; Jesus offered a cup of suffering. Part of the inner three, he became the first of the Twelve to be martyred, around AD 44.",
+    guard:"Jesus didn&rsquo;t crush James&rsquo;s ambition &mdash; he aimed it at a cross instead of a throne. Your drive isn&rsquo;t the problem; its direction is.",
+    questions:[
+      "James asked for the glory; Jesus offered the cup of suffering. Where have you wanted the reward without the cost?",
+      "Jesus redirected James&rsquo;s ambition rather than killing it. What God-given drive in you needs redirecting more than suppressing?",
+      "&ldquo;Son of Thunder&rdquo; was a real personality trait. What&rsquo;s the &ldquo;thunder&rdquo; in you &mdash; and is Jesus using it or taming it right now?",
+      "James was the first to die for Jesus. What would following Jesus cost you this year &mdash; and are you willing?",
+      "James and John served side by side as brothers. Who is your &ldquo;partner in the work,&rdquo; and how are you sharpening each other?"
+    ]},
+
+  { id:"john", n:"John", session:4, group:1, inner:true, betrayer:false,
+    roles:["inner three","Son of Thunder","the beloved disciple"],
+    hook:"Thunder transformed into love.",
+    verses:[
+      {t:"&hellip; one of his disciples, whom Jesus loved, was reclining at table at Jesus&rsquo; side.", r:"John 13:23"},
+      {t:"&ldquo;Behold, your mother!&rdquo; And from that hour the disciple took her to his own home.", r:"John 19:26&ndash;27"},
+      {t:"Anyone who does not love does not know God, because God is love.", r:"1 John 4:8"}
+    ],
+    profile:"He began as a Son of Thunder who wanted to incinerate a Samaritan village and ended as the apostle of love. The &ldquo;beloved disciple,&rdquo; entrusted with Jesus&rsquo;s mother at the cross. He outlived the others and wrote a Gospel, three letters, and Revelation &mdash; returning again and again to one theme: love.",
+    guard:"You don&rsquo;t become loving by trying harder; you become loving by resting in being loved. John&rsquo;s whole transformation flowed from knowing he was &ldquo;the one Jesus loves.&rdquo;",
+    questions:[
+      "John went from wanting to call down fire to writing &ldquo;God is love.&rdquo; What slow transformation has Jesus been working in you over years?",
+      "John&rsquo;s identity was &ldquo;the one Jesus loves.&rdquo; If you introduced yourself that way, what would change about how you live?",
+      "At the cross, Jesus handed John a new responsibility &mdash; caring for Mary. Who has God placed in your care that you didn&rsquo;t choose?",
+      "John leaned on Jesus at the table. What does unhurried closeness with Jesus look like in your week &mdash; and when did you last have it?",
+      "John was still preaching love in old age. What truth do you want to still be living out decades from now?"
+    ]},
+
+  { id:"philip", n:"Philip", session:5, group:2, inner:false, betrayer:false,
+    roles:["from Bethsaida","brought Nathanael"],
+    hook:"The practical &ldquo;show me&rdquo; disciple Jesus kept stretching.",
+    verses:[
+      {t:"Jesus found Philip and said to him, &ldquo;Follow me.&rdquo;", r:"John 1:43"},
+      {t:"&ldquo;Two hundred denarii worth of bread would not be enough &hellip;&rdquo;", r:"John 6:7"},
+      {t:"&ldquo;Lord, show us the Father, and it is enough for us.&rdquo;", r:"John 14:8"}
+    ],
+    profile:"From Bethsaida, like Peter and Andrew. Literal and evidence-minded &mdash; he did the math on feeding five thousand and concluded it was hopeless. Yet his instinct with Nathanael was a simple &ldquo;come and see.&rdquo; Even after years with Jesus he wanted to be shown the Father.",
+    guard:"Jesus is patient with the literal-minded. He doesn&rsquo;t shame Philip&rsquo;s request &mdash; he answers it: &ldquo;Whoever has seen me has seen the Father.&rdquo;",
+    questions:[
+      "Philip saw the hungry crowd and instantly did the discouraging math. When does your practical realism quietly become a faith-killer?",
+      "Jesus already knew what he&rsquo;d do but tested Philip first. How do you respond when God lets you face a problem with no visible solution?",
+      "Philip&rsquo;s move with Nathanael was &ldquo;come and see.&rdquo; Who needs a low-pressure &ldquo;come and see&rdquo; invitation from you?",
+      "&ldquo;Show us the Father&rdquo; &mdash; Philip wanted more proof after years with Jesus. What &ldquo;more&rdquo; are you waiting for before you&rsquo;ll fully trust?",
+      "Where is Jesus inviting you to act before the numbers add up?"
+    ]},
+
+  { id:"barth", n:"Bartholomew / Nathanael", session:6, group:2, inner:false, betrayer:false,
+    roles:["likely Nathanael","no deceit"],
+    hook:"The man with no guile.",
+    verses:[
+      {t:"&ldquo;Can anything good come out of Nazareth?&rdquo;", r:"John 1:46"},
+      {t:"&ldquo;Behold, an Israelite indeed, in whom there is no deceit!&rdquo;", r:"John 1:47"},
+      {t:"&ldquo;Rabbi, you are the Son of God! You are the King of Israel!&rdquo;", r:"John 1:49"}
+    ],
+    profile:"Commonly identified with the Nathanael of John&rsquo;s Gospel. He began blunt and skeptical, but was utterly without pretense. The moment Jesus showed he already knew him &mdash; &ldquo;I saw you under the fig tree&rdquo; &mdash; he moved from doubt to worship in a breath.",
+    guard:"Jesus welcomes the honest doubter faster than the polished pretender. He commends the man with nothing to hide.",
+    questions:[
+      "Nathanael&rsquo;s first reaction to Jesus was skepticism. Is honest skepticism a barrier to faith, or can it be a doorway? Where are you?",
+      "Jesus praised Nathanael for having &ldquo;no deceit.&rdquo; How honest are you really &mdash; with God, with others, with yourself?",
+      "What moved Nathanael was being fully known. When have you felt truly known by God?",
+      "He went from &ldquo;can anything good come?&rdquo; to &ldquo;you are the Son of God&rdquo; in minutes. What would move you from doubt to worship?",
+      "Where are you hiding behind a little &ldquo;guile&rdquo; &mdash; image management &mdash; that Jesus is inviting you to drop?"
+    ]},
+
+  { id:"thomas", n:"Thomas", session:7, group:2, inner:false, betrayer:false,
+    roles:["&ldquo;the Twin&rdquo;","honest doubter"],
+    hook:"The honest doubter who gave the highest confession.",
+    verses:[
+      {t:"&ldquo;Let us also go, that we may die with him.&rdquo;", r:"John 11:16"},
+      {t:"&ldquo;Unless I see &hellip; I will never believe.&rdquo;", r:"John 20:25"},
+      {t:"Thomas answered him, &ldquo;My Lord and my God!&rdquo;", r:"John 20:28"}
+    ],
+    profile:"Called &ldquo;the Twin.&rdquo; Brave enough to follow Jesus toward danger, and too honest to fake a belief he didn&rsquo;t hold. He demanded evidence of the resurrection &mdash; and when Jesus offered his wounds, Thomas made the most exalted confession of Jesus&rsquo;s deity in all the Gospels.",
+    guard:"Jesus accommodates honest doubt. He would rather have a Thomas who wrestles his way to &ldquo;my Lord and my God&rdquo; than a follower who only pretends.",
+    questions:[
+      "Thomas refused to pretend to believe. Is that honesty or stubbornness? Where do you fake a certainty you don&rsquo;t feel?",
+      "Jesus didn&rsquo;t scold Thomas &mdash; he offered his wounds. How does that change the way you bring your doubts to God?",
+      "The doubter gave the highest confession. Have your hardest questions ever led you to deeper faith?",
+      "Jesus blessed those who believe without seeing. What are you being asked to trust without proof right now?",
+      "Thomas was also the one ready to die with Jesus. How do courage and doubt live in the same person &mdash; and in you?"
+    ]},
+
+  { id:"matthew", n:"Matthew (Levi)", session:8, group:2, inner:false, betrayer:false,
+    roles:["tax collector","Gospel writer (tradition)"],
+    hook:"The tax collector grace reached at his booth.",
+    verses:[
+      {t:"&ldquo;Follow me.&rdquo; And he rose and followed him.", r:"Matthew 9:9"},
+      {t:"&ldquo;I came not to call the righteous, but sinners.&rdquo;", r:"Matthew 9:13"},
+      {t:"Levi made him a great feast in his house &hellip;", r:"Luke 5:29"}
+    ],
+    profile:"A tax collector &mdash; a Jew working for Rome, despised as a traitor and a cheat. Jesus called him straight from the tax booth with two words, and he left it all at once. His first move was a party so his sinner-friends could meet Jesus. Early church tradition names him the writer of the Gospel that bears his name.",
+    guard:"&ldquo;I came not to call the righteous, but sinners.&rdquo; Your résumé of failure is not a disqualification &mdash; it is exactly Jesus&rsquo;s hiring criteria.",
+    questions:[
+      "Matthew was the last person his town expected Jesus to call. Who do you secretly think is &ldquo;too far gone&rdquo; for grace?",
+      "He left a lucrative, secure job instantly. What would Jesus&rsquo;s &ldquo;follow me&rdquo; cost you to obey today?",
+      "Matthew&rsquo;s first instinct was a party for his old crowd. Does your faith open doors to your pre-Jesus friends, or close them?",
+      "The religious crowd grumbled that Jesus ate with sinners. Are you ever more comfortable judging the &ldquo;Matthews&rdquo; than sitting with them?",
+      "A tax collector became a gospel writer. What part of your past do you assume disqualifies you that God might be planning to use?"
+    ]},
+
+  { id:"jamesa", n:"James, son of Alphaeus", session:9, group:3, inner:false, betrayer:false,
+    roles:["&ldquo;James the Less&rdquo;","least known"],
+    hook:"Faithful in obscurity &mdash; the disciple we know least.",
+    verses:[
+      {t:"&hellip; James the son of Alphaeus, and Thaddaeus &hellip;", r:"Matthew 10:3"},
+      {t:"&hellip; they went up to the upper room &hellip; James the son of Alphaeus.", r:"Acts 1:13"}
+    ],
+    profile:"Scripture records only his name in the lists &mdash; no recorded words, no recorded deeds. Sometimes called &ldquo;James the Less.&rdquo; Yet there he is in the upper room after the ascension, still present, still praying. A study in being chosen, sent, and faithful with no spotlight at all.",
+    guard:"Jesus doesn&rsquo;t grade on platform. The unnamed disciple is no less chosen, no less loved, and no less sent than Peter.",
+    questions:[
+      "We know nothing about James but his name &mdash; yet Jesus chose him as one of the Twelve. What does that say to anyone who feels unseen?",
+      "Most faithful Christians never get their story told. Are you okay being &ldquo;known to God&rdquo; but unknown to history?",
+      "James was still in the upper room praying after the ascension. What does quiet, unrewarded faithfulness look like for you?",
+      "Our culture rewards visibility. Where are you tempted to perform your faith rather than simply live it?",
+      "If your discipleship were never noticed by anyone but God, would that be enough for you? Be honest."
+    ]},
+
+  { id:"thad", n:"Thaddaeus / Jude", session:10, group:3, inner:false, betrayer:false,
+    roles:["son of James","not Iscariot"],
+    hook:"The one who asked the quiet question.",
+    verses:[
+      {t:"&hellip; Judas the son of James, and Judas Iscariot, who became a traitor.", r:"Luke 6:16"},
+      {t:"&ldquo;Lord, how is it that you will manifest yourself to us, and not to the world?&rdquo;", r:"John 14:22"}
+    ],
+    profile:"Known by more than one name &mdash; Thaddaeus in Matthew and Mark, Judas son of James in Luke and Acts (some manuscripts add Lebbaeus) &mdash; likely to set him apart from Judas Iscariot. He has one recorded line: a sincere question at the Last Supper, wondering why Jesus would reveal himself to the few and not the whole world. Jesus answered with a promise of love and indwelling.",
+    guard:"Jesus honors the honest question. Thaddaeus&rsquo;s quiet wondering drew one of the richest answers in John&rsquo;s Gospel: &ldquo;we will come to him and make our home with him.&rdquo;",
+    questions:[
+      "Thaddaeus&rsquo;s one recorded line is a sincere question. What honest question about Jesus are you carrying that you&rsquo;ve never voiced?",
+      "He wondered why Jesus shows himself to disciples and not the whole world. How does Jesus reveal himself to the world today &mdash; and what&rsquo;s your part?",
+      "He had to share a name with the betrayer and is mostly remembered by nicknames. How do you handle being defined by associations you didn&rsquo;t choose?",
+      "Jesus answered his question with a promise of presence. When you bring God a real question, do you actually expect an answer?",
+      "What&rsquo;s one question you could bring to this group tonight instead of carrying it alone?"
+    ]},
+
+  { id:"simon", n:"Simon the Zealot", session:11, group:3, inner:false, betrayer:false,
+    roles:["anti-Rome zeal","Matthew&rsquo;s opposite"],
+    hook:"The political radical who became a brother.",
+    verses:[
+      {t:"&hellip; and Simon who was called the Zealot.", r:"Luke 6:15"},
+      {t:"&hellip; Simon the Zealot and Judas the son of James.", r:"Acts 1:13"}
+    ],
+    profile:"A &ldquo;zealot&rdquo; &mdash; a man of burning anti-Rome fervor, the kind of zeal that later fueled armed revolt. Jesus seated him on the same team as Matthew, who collected taxes for Rome. Two sworn enemies became brothers. Simon&rsquo;s old zeal didn&rsquo;t vanish; it found a new and worthier object in Jesus.",
+    guard:"Only Jesus turns enemies into brothers. The unity of the gospel isn&rsquo;t us being nice &mdash; it&rsquo;s a shared allegiance bigger than every division we bring.",
+    questions:[
+      "Simon the Zealot and Matthew the tax collector were political enemies on the same team. Who would be your &ldquo;Matthew&rdquo; &mdash; the person you can&rsquo;t believe God would seat next to you?",
+      "Simon&rsquo;s zeal got a new target rather than disappearing. What passion or cause in you needs to be re-aimed at Jesus?",
+      "The early church united people the culture said could never share a table. Is your church or group truly that, or quietly sorted by politics and class?",
+      "Following Jesus meant Simon loosened his grip on a cause he&rsquo;d have killed for. What loyalty might Jesus ask you to hold more loosely than him?",
+      "Where is God calling you to be reconciled to someone you&rsquo;ve written off as on &ldquo;the other side&rdquo;?"
+    ]},
+
+  { id:"judas", n:"Judas Iscariot", session:12, group:3, inner:false, betrayer:true,
+    roles:["the betrayer","kept the moneybag","always listed last"],
+    hook:"Nearness to Jesus without surrender &mdash; the sobering capstone.",
+    verses:[
+      {t:"&hellip; he was a thief, and having charge of the moneybag he used to help himself &hellip;", r:"John 12:6"},
+      {t:"&ldquo;What will you give me if I deliver him over to you?&rdquo;", r:"Matthew 26:15"},
+      {t:"&ldquo;I have sinned by betraying innocent blood.&rdquo;", r:"Matthew 27:4"}
+    ],
+    profile:"Trusted as the group&rsquo;s treasurer &mdash; and quietly skimming from it. He saw every miracle, heard every sermon, and was washed by Jesus&rsquo;s own hands, yet never surrendered his heart. He betrayed Jesus for thirty pieces of silver, then felt remorse but not repentance &mdash; he returned the money, but never returned to Jesus.",
+    guard:"This is not a &ldquo;don&rsquo;t be Judas&rdquo; scare. It&rsquo;s the series&rsquo; closing invitation: proximity to Jesus is not the same as surrender to him &mdash; and the door Peter walked back through is still open to anyone, even now.",
+    questions:[
+      "Judas had everything &mdash; proximity, trust, three years with Jesus &mdash; and was lost. What does that say about the gap between being near Jesus and following him?",
+      "His ruin began small, with the moneybag. What &ldquo;small&rdquo; compromise are you tolerating that may be quietly hardening your heart?",
+      "Judas felt remorse and returned the money, but never returned to Jesus. What&rsquo;s the difference between worldly regret and real repentance?",
+      "We can lead a group, know all the words, and still hold our heart back. Be honest: is there a place you&rsquo;re keeping from Jesus?",
+      "Peter and Judas both failed Jesus badly the same week. The difference was turning back. What is keeping you from turning back to Jesus today?"
+    ]}
+];
+
+// ---------- render home ----------
+const groupsEl = document.getElementById('groups');
+[1,2,3].forEach(g=>{
+  const col = document.createElement('div');
+  col.className='group';
+  col.innerHTML = `<div class="group-h"><div class="g-name">${GROUPS[g].name}</div><div class="g-sub">${GROUPS[g].sub}</div></div>`;
+  D.filter(d=>d.group===g).forEach(d=>{
+    const idx = D.indexOf(d);
+    const cls = d.inner ? 'inner' : (d.betrayer ? 'betrayer' : '');
+    const pills = d.roles.map(r=>{
+      let pc='';
+      if(/inner/.test(r)) pc=' b-inner';
+      if(/betray/.test(r)) pc=' b-betray';
+      return `<span class="pill${pc}">${r}</span>`;
+    }).join('');
+    const card = document.createElement('div');
+    card.className = `card ${cls}`;
+    card.tabIndex = 0; card.setAttribute('role','button'); card.setAttribute('aria-label', d.n);
+    card.innerHTML = `<div class="c-num">${String(d.session).padStart(2,'0')}</div>
+      <div class="c-name">${d.n}</div>
+      <div class="c-hook">${d.hook}</div>
+      <div class="pills">${pills}</div>`;
+    card.addEventListener('click',()=>openDisciple(idx));
+    card.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();openDisciple(idx);} });
+    col.appendChild(card);
+  });
+  groupsEl.appendChild(col);
+});
+
+// ---------- detail ----------
+const home=document.getElementById('home'), detail=document.getElementById('detail');
+let cur=-1;
+
+function render(i){
+  const d=D[i];
+  document.getElementById('sessionTag').textContent=`Session ${d.session} of 12`;
+  const name=document.getElementById('dName');
+  name.innerHTML=d.n;
+  name.className='d-name'+(d.betrayer?' is-betray':'')+(d.inner?' is-inner':'');
+  document.getElementById('dHook').innerHTML=d.hook;
+  document.getElementById('footName').innerHTML=d.n;
+  document.getElementById('dRoles').innerHTML=d.roles.map(r=>{
+    let pc=''; if(/inner/.test(r))pc=' b-inner'; if(/betray/.test(r))pc=' b-betray';
+    return `<span class="pill${pc}">${r}</span>`;
+  }).join('');
+  document.getElementById('dVerses').innerHTML=d.verses.map(v=>
+    `<div class="verse"><div class="vtext">${v.t}</div><div class="vref">${v.r}</div></div>`).join('');
+  document.getElementById('dProfile').innerHTML=d.profile;
+  document.getElementById('dGuard').innerHTML=d.guard;
+  document.getElementById('dQuestions').innerHTML=d.questions.map((q,n)=>
+    `<li><span class="q-n">${n+1}</span><span class="q-t">${q}</span></li>`).join('');
+  setTab('man');
+}
+function openDisciple(i){ cur=i; render(i); home.classList.add('hidden'); detail.classList.remove('hidden'); window.scrollTo(0,0); }
+function back(){ detail.classList.add('hidden'); home.classList.remove('hidden'); cur=-1; }
+function step(dir){ if(cur<0)return; cur=(cur+dir+D.length)%D.length; render(cur); window.scrollTo(0,0); }
+function setTab(p){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.pane===p));
+  document.getElementById('pane-man').classList.toggle('show',p==='man');
+  document.getElementById('pane-talk').classList.toggle('show',p==='talk');
+}
+
+document.getElementById('backBtn').addEventListener('click',back);
+document.getElementById('prevBtn').addEventListener('click',()=>step(-1));
+document.getElementById('nextBtn').addEventListener('click',()=>step(1));
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>setTab(t.dataset.pane)));
+document.addEventListener('keydown',e=>{
+  if(detail.classList.contains('hidden'))return;
+  if(e.key==='Escape')back();
+  else if(e.key==='ArrowRight')step(1);
+  else if(e.key==='ArrowLeft')step(-1);
+  else if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();
+    setTab(document.getElementById('pane-man').classList.contains('show')?'talk':'man');}
+});
+</script>
+</body>
+</html>
