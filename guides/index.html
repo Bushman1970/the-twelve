@@ -26,6 +26,7 @@
   }
   .brand{padding:0 20px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
   .brand a{text-decoration:none;color:inherit;display:block}
+  .brand .sup,.brand .nm,.brand .cad{display:block}
   .brand .sup{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
   .brand .nm{font-family:var(--serif);font-size:1.5rem;font-weight:700;letter-spacing:-.01em;line-height:1.1;margin-top:5px}
   .brand .cad{font-size:11px;color:var(--slate-dim);margin-top:6px;line-height:1.4}
@@ -1082,12 +1083,12 @@ glance:[
    --------------------------------------------------------------- */
 
 var GROUPS = [
-  { n:1, title:'The first four',
-    detail:'Always named first in all four apostle lists, and always headed by Peter. Contains the inner three.' },
-  { n:2, title:'The second four',
-    detail:'Always named second, and always headed by Philip. Four men John shows us in conversation with Jesus.' },
-  { n:3, title:'The last four',
-    detail:'Always named last, and always ending with Judas. Three we know almost nothing about, and one we wish we knew less.' }
+  { n:1, short:'Group one &mdash; the fishermen', title:'Group one &mdash; the fishermen',
+    detail:'Led by Peter, always named first, most named in the Gospels. Contains the inner three.' },
+  { n:2, short:'Group two &mdash; the seekers', title:'Group two &mdash; the seekers',
+    detail:'Led by Philip, always named second. The questioners and finders, the four John shows us talking with Jesus.' },
+  { n:3, short:'Group three &mdash; the quiet faithful', title:'Group three &mdash; the quiet faithful',
+    detail:'Led by James son of Alphaeus, least mentioned of the Twelve, and Judas always last.' }
 ];
 
 var BEATS = [
