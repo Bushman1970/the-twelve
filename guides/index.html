@@ -1,0 +1,1411 @@
+<title>The Twelve Leader's Console</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Archivo:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ink:#0E1620; --raise:#16212E; --raise-2:#1C2938;
+    --line:#27343F; --line-soft:#1F2B37;
+    --parch:#E9E3D7; --slate:#93A1AF; --slate-dim:#6D7B89;
+    --brass:#C89B3C; --brass-dim:#8A6C2C; --oxblood:#B4534A;
+    --serif:'Spectral',Georgia,'Times New Roman',serif;
+    --sans:'Archivo','Helvetica Neue',Arial,sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--ink);color:var(--parch);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--brass)}
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+  /* ============ shell ============ */
+  .shell{display:grid;grid-template-columns:232px 1fr;min-height:100vh;align-items:start}
+
+  /* ============ nav rail ============ */
+  .nav{
+    position:sticky;top:0;height:100vh;overflow-y:auto;
+    background:var(--raise);border-right:1px solid var(--line);padding:22px 0 30px
+  }
+  .brand{padding:0 20px 18px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .brand a{text-decoration:none;color:inherit;display:block}
+  .brand .sup{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+  .brand .nm{font-family:var(--serif);font-size:1.5rem;font-weight:700;letter-spacing:-.01em;line-height:1.1;margin-top:5px}
+  .brand .cad{font-size:11px;color:var(--slate-dim);margin-top:6px;line-height:1.4}
+  .navgroup{padding:0 12px;margin-bottom:14px}
+  .navgroup .gl{
+    font-size:9.5px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;
+    color:var(--slate-dim);padding:0 8px 7px
+  }
+  .navlink{
+    display:grid;grid-template-columns:22px 1fr;gap:9px;align-items:baseline;
+    padding:7px 8px;border-radius:3px;text-decoration:none;color:var(--slate);
+    font-size:13.5px;line-height:1.3;border-left:2px solid transparent
+  }
+  .navlink .i{font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--slate-dim);font-weight:600}
+  .navlink:hover{background:var(--raise-2);color:var(--parch)}
+  .navlink.on{background:var(--ink);color:var(--brass);border-left-color:var(--brass);font-weight:500}
+  .navlink.on .i{color:var(--brass)}
+  .navfoot{padding:14px 20px 0;margin-top:6px;border-top:1px solid var(--line);font-size:11px;color:var(--slate-dim);line-height:1.55}
+
+  /* ============ main ============ */
+  .main{min-width:0}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 34px 80px}
+
+  /* ---- masthead ---- */
+  .mast{padding:38px 0 26px;border-bottom:1px solid var(--line)}
+  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);display:flex;flex-wrap:wrap;gap:13px;align-items:baseline}
+  .eyebrow .sep{color:var(--slate-dim)}
+  .eyebrow .plain{color:var(--slate)}
+  h1{font-family:var(--serif);font-weight:700;font-size:clamp(2.2rem,5.4vw,3.7rem);line-height:1.03;margin:13px 0 0;letter-spacing:-.02em;text-wrap:balance}
+  h1 .sub{display:block;font-size:.34em;font-weight:500;letter-spacing:.01em;color:var(--slate);margin-top:13px;font-style:italic}
+  .hook{font-family:var(--serif);font-size:clamp(1.05rem,2vw,1.28rem);line-height:1.5;max-width:62ch;margin:20px 0 0}
+  .hook em{color:var(--brass);font-style:italic}
+
+  /* ---- spine ---- */
+  .spine{margin:32px 0 0;padding:24px 0 4px;border-top:1px solid var(--line-soft)}
+  .spine-label{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-dim);margin-bottom:19px}
+  .stations{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;align-items:stretch}
+  .station{padding:0 4px}
+  .station .ref{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--brass-dim);margin-bottom:9px}
+  .station h3{font-family:var(--serif);font-size:1.4rem;font-weight:600;margin:0 0 8px;line-height:1.15;letter-spacing:-.01em}
+  .station p{margin:0;color:var(--slate);font-size:13.5px;line-height:1.55;max-width:32ch}
+  .station.cost .ref,.station.cost h3{color:var(--oxblood)}
+  .link{display:flex;flex-direction:column;padding:0 20px;min-width:70px}
+  .link .rule{height:1px;background:linear-gradient(90deg,var(--line),var(--brass-dim),var(--line));margin-top:29px;position:relative}
+  .link .rule::after{content:"";position:absolute;right:-1px;top:-3.5px;width:7px;height:7px;background:var(--brass);transform:rotate(45deg)}
+  .link .word{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-dim);text-align:center;margin-top:11px}
+
+  /* ---- body grid ---- */
+  .grid{display:grid;grid-template-columns:272px 1fr;gap:42px;margin-top:48px;align-items:start}
+  .rail{position:sticky;top:20px}
+  .rail h2{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-dim);margin:0}
+  .startline{display:flex;align-items:center;gap:9px;margin:14px 0 18px}
+  .startline label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--slate-dim)}
+  input[type=time]{background:var(--raise);color:var(--parch);border:1px solid var(--line);border-radius:3px;padding:5px 8px;font-family:var(--sans);font-size:14px;font-variant-numeric:tabular-nums}
+  .beats{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+  .beat{display:grid;grid-template-columns:52px 1fr;gap:12px;padding:7px 0 7px 14px;position:relative}
+  .beat .clock{font-size:13px;font-variant-numeric:tabular-nums;color:var(--slate-dim);padding-top:1px}
+  .beat .name{font-size:13.5px;color:var(--slate);line-height:1.35}
+  .beat .mins{font-size:11px;color:var(--slate-dim);margin-left:5px;font-variant-numeric:tabular-nums}
+  .beat::before{content:"";position:absolute;left:-3.5px;top:14px;width:6px;height:6px;background:var(--line);border-radius:50%}
+  .beat.teach .name{color:var(--parch)}
+  .beat.pivot .name,.beat.heart .name{color:var(--parch);font-weight:500}
+  .beat.pivot::before,.beat.heart::before{background:var(--brass)}
+  .beat.now{background:var(--raise);border-radius:0 3px 3px 0}
+  .beat.now::before{background:var(--brass);box-shadow:0 0 0 3px rgba(200,155,60,.18)}
+  .beat.now .clock,.beat.now .name{color:var(--brass)}
+  .teach-note{font-size:11.5px;color:var(--slate-dim);line-height:1.45;margin:16px 0 0;padding-left:15px;border-left:1px solid var(--line-soft)}
+  .clockwarn{margin-top:18px;padding:13px 14px;background:var(--raise);border-left:2px solid var(--oxblood);font-size:12.5px;line-height:1.5;color:var(--slate)}
+  .clockwarn b{color:var(--parch);font-weight:600}
+
+  .col{display:flex;flex-direction:column;gap:44px;min-width:0}
+  .shead{display:flex;align-items:baseline;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:21px}
+  .shead .t{font-family:var(--serif);font-size:1.45rem;font-weight:600;margin:0;letter-spacing:-.01em}
+  .shead .when{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-dim);font-variant-numeric:tabular-nums;white-space:nowrap;margin-left:auto}
+  p{margin:0 0 14px}
+  .lede{max-width:66ch}
+  .lede:last-child{margin-bottom:0}
+  .lede b{font-weight:600}
+  .lede em{font-style:italic;color:var(--brass)}
+
+  .scenes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line-soft)}
+  .scene{background:var(--ink);padding:18px 20px 20px}
+  .scene .tag{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--brass-dim);margin-bottom:7px}
+  .scene h4{font-family:var(--serif);font-size:1.1rem;font-weight:600;margin:0 0 7px}
+  .scene p{margin:0;font-size:13.5px;color:var(--slate);line-height:1.55}
+  .scene q{font-family:var(--serif);font-style:italic;color:var(--parch);quotes:'\201C' '\201D'}
+
+  .versus{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line)}
+  .versus > div{padding:20px 22px}
+  .versus .a{border-right:1px solid var(--line)}
+  .versus .k{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;margin-bottom:10px;color:var(--slate-dim)}
+  .versus .a .k{color:var(--brass-dim)}
+  .versus .b .k{color:var(--oxblood)}
+  .versus blockquote{margin:0 0 12px;font-family:var(--serif);font-style:italic;font-size:1.06rem;line-height:1.45;color:var(--parch)}
+  .versus p{margin:0;font-size:13.5px;color:var(--slate)}
+  .versus p em{font-style:italic;color:var(--parch)}
+  .downline{text-align:center;font-family:var(--serif);font-style:italic;font-size:1.14rem;color:var(--brass);margin:20px 0 0}
+
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(212px,1fr));gap:1px;background:var(--line-soft)}
+  .fact{background:var(--ink);padding:15px 18px 17px}
+  .fact dt{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--slate-dim);margin-bottom:6px}
+  .fact dd{margin:0;font-size:13.5px;line-height:1.5;color:var(--parch)}
+  .fact dd .note{color:var(--slate-dim);font-style:italic;font-family:var(--serif)}
+  .tradition{margin-top:22px;padding:15px 18px;background:var(--raise);font-size:12.5px;color:var(--slate);line-height:1.6}
+  .tradition .k{font-size:10.5px;font-weight:600;letter-spacing:.13em;text-transform:uppercase;color:var(--brass-dim);margin-bottom:8px}
+  .tradition b{color:var(--parch);font-weight:600}
+  .tradition em{font-style:italic}
+
+  .guardrail{border-top:2px solid var(--brass);background:var(--raise);padding:30px 34px 32px}
+  .guardrail .say{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin-bottom:18px}
+  .guardrail .speech{font-family:var(--serif);font-size:clamp(1.12rem,2.1vw,1.45rem);line-height:1.5;margin:0;max-width:56ch}
+  .guardrail .speech em{font-style:italic;color:var(--brass)}
+  .guardrail .foot{margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--slate);max-width:66ch}
+  .guardrail .foot b{color:var(--parch);font-weight:600}
+
+  .qs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;background:var(--line-soft)}
+  .qs li{background:var(--ink);display:grid;grid-template-columns:34px 1fr;gap:14px;padding:16px 4px 17px 0}
+  .qs .n{font-family:var(--serif);font-size:1.28rem;font-weight:600;color:var(--brass-dim);text-align:right;font-variant-numeric:tabular-nums;line-height:1.25}
+  .qs .q{margin:0;max-width:64ch}
+  .qs .q b{font-weight:600;color:var(--parch)}
+  .qs .q span{color:var(--slate)}
+  .qs li.land{background:var(--raise-2);grid-template-columns:34px 1fr auto}
+  .qs li.land .n{color:var(--brass)}
+  .qs li.land .tick{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--brass);align-self:center;padding-right:14px;white-space:nowrap}
+  .couples{margin-top:20px;padding:18px 20px;border:1px dashed var(--line);font-size:13.5px;color:var(--slate);line-height:1.6}
+  .couples .k{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-dim);margin-bottom:9px}
+  .couples em{font-family:var(--serif);font-style:italic;color:var(--parch)}
+  .dry{margin-top:16px;font-size:12.5px;color:var(--slate-dim);line-height:1.55}
+  .dry b{color:var(--slate);font-weight:600}
+  .dry em{font-family:var(--serif);color:var(--slate);font-style:italic}
+
+  .takeaway{padding:32px 0 0;border-top:1px solid var(--line)}
+  .takeaway .k{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--slate-dim);margin-bottom:16px}
+  .takeaway blockquote{margin:0;font-family:var(--serif);font-size:clamp(1.28rem,2.6vw,1.8rem);line-height:1.38;font-style:italic;max-width:46ch;letter-spacing:-.01em}
+  .takeaway blockquote b{font-style:normal;font-weight:600;color:var(--brass)}
+  .anchors{font-size:13px;color:var(--slate);line-height:1.85}
+  .anchors b{color:var(--parch);font-weight:500;font-family:var(--serif);font-size:14px}
+
+  /* pager */
+  .pager{display:flex;justify-content:space-between;gap:16px;margin-top:52px;padding-top:22px;border-top:1px solid var(--line)}
+  .pager a{
+    text-decoration:none;color:var(--slate);font-size:13px;line-height:1.4;
+    display:block;max-width:46%
+  }
+  .pager a:hover{color:var(--brass)}
+  .pager .k{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--slate-dim);margin-bottom:5px}
+  .pager .nm{font-family:var(--serif);font-size:1.1rem;color:var(--parch)}
+  .pager a:hover .nm{color:var(--brass)}
+  .pager .r{text-align:right;margin-left:auto}
+
+  /* ============ overview ============ */
+  .ov-mast{padding:44px 0 30px;border-bottom:1px solid var(--line)}
+  .ov-lede{font-family:var(--serif);font-size:clamp(1.05rem,2vw,1.26rem);line-height:1.55;max-width:64ch;margin:20px 0 0;color:var(--parch)}
+  .ov-lede em{font-style:italic;color:var(--brass)}
+  .ov-note{max-width:66ch;margin:18px 0 0;font-size:13.5px;color:var(--slate)}
+  .ov-note b{color:var(--parch);font-weight:600}
+  .ovgroup{margin-top:44px}
+  .ovgroup .gh{display:flex;align-items:baseline;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:2px}
+  .ovgroup .gh .t{font-family:var(--serif);font-size:1.3rem;font-weight:600;margin:0}
+  .ovgroup .gh .d{font-size:12.5px;color:var(--slate-dim);margin-left:auto;text-align:right;max-width:46ch;line-height:1.45}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:1px;background:var(--line-soft)}
+  .card{background:var(--ink);padding:19px 20px 21px;text-decoration:none;color:inherit;display:block;border-top:2px solid transparent}
+  .card:hover{background:var(--raise);border-top-color:var(--brass)}
+  .card .i{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass-dim);font-variant-numeric:tabular-nums}
+  .card h4{font-family:var(--serif);font-size:1.28rem;font-weight:600;margin:7px 0 8px;line-height:1.14;letter-spacing:-.01em}
+  .card p{margin:0;font-size:13px;color:var(--slate);line-height:1.5}
+  .card:hover h4{color:var(--brass)}
+
+  .howto{margin-top:48px;padding:24px 26px;background:var(--raise);border-left:2px solid var(--brass-dim)}
+  .howto .k{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-bottom:13px}
+  .howto ul{margin:0;padding-left:19px;font-size:13.5px;color:var(--slate);line-height:1.75}
+  .howto b{color:var(--parch);font-weight:600}
+  .howto kbd{
+    font-family:var(--sans);font-size:11px;background:var(--ink);border:1px solid var(--line);
+    border-radius:3px;padding:1px 5px;color:var(--parch)
+  }
+
+  footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--slate-dim);line-height:1.6}
+  footer b{color:var(--slate);font-weight:500}
+
+  @media (max-width:1000px){
+    .shell{grid-template-columns:1fr}
+    .nav{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line);padding-bottom:18px}
+    .navgroup{display:inline-block;vertical-align:top;min-width:210px}
+    .grid{grid-template-columns:1fr;gap:36px}
+    .rail{position:static}
+    .stations{grid-template-columns:1fr}
+    .link{flex-direction:row;align-items:center;gap:12px;padding:14px 0;min-width:0}
+    .link .rule{flex:1;margin-top:0}
+    .link .rule::after{display:none}
+    .link .word{margin-top:0}
+    .scenes,.versus{grid-template-columns:1fr}
+    .versus .a{border-right:none;border-bottom:1px solid var(--line)}
+    .station p{max-width:none}
+    .wrap{padding:0 22px 64px}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+  @media print{
+    .nav,.pager,.howto,.startline{display:none}
+    body{background:#fff;color:#111}
+    .shell{display:block}
+    .guardrail,.tradition,.clockwarn,.card,.scene,.fact{background:#fff}
+  }
+</style>
+
+<div class="shell">
+  <nav class="nav" id="nav"></nav>
+  <main class="main" id="main"></main>
+</div>
+<noscript><div class="wrap" style="padding-top:40px"><h1>The Twelve</h1><p class="hook">This leader&rsquo;s console needs JavaScript to run. The full written guides live in the vault folder <b>D Group - The Twelve/</b>.</p></div></noscript>
+
+<script>
+var S = [];
+S.push({
+n:1, slug:'peter', name:'Simon Peter', group:1,
+sub:'Simon, son of John &middot; called Cephas, the Rock',
+hook:'The man who failed loudest and was restored fully &mdash; living proof that Jesus builds his church on <em>forgiven</em> people, not flawless ones.',
+essence:'The man who failed loudest and was restored fully.',
+spine:[
+ {ref:'Luke 5:8 &middot; the call', head:'He was exposed, not excited', body:'A catch that nearly sinks two boats, and his response is &ldquo;Depart from me, for I am a sinful man.&rdquo; Jesus answers: from now on you will be catching men.'},
+ {ref:'Luke 22:54&ndash;62 &middot; the collapse', head:'He denied him three times', body:'The man who swore he would die with Jesus denies him to a servant girl, warming himself at a charcoal fire.', cost:true},
+ {ref:'John 21:15&ndash;19 &middot; the beach', head:'Restored, then commissioned', body:'Jesus builds another charcoal fire and asks three times &mdash; not &ldquo;are you sorry?&rdquo; but &ldquo;do you love me?&rdquo; Then: feed my sheep.'}
+],
+links:['Then the fall','Grace first'],
+prep:[
+ 'Peter is the right disciple to open with because his life is the whole gospel in miniature: <b>called as he was, named for who he would become, allowed to fail badly, and restored completely.</b> Every person in the room &mdash; the seasoned believer and the brand-new one &mdash; sees themselves in Peter. Of all the Twelve he is the most humanly understandable: his strengths and his shortcomings both sit right on the surface.',
+ 'Tonight&rsquo;s job is to let the group feel that, then turn their eyes from Peter&rsquo;s instability to Christ&rsquo;s faithfulness.',
+ '<b>The trap to avoid:</b> &ldquo;Be bold like Peter.&rdquo; Peter&rsquo;s boldness is exactly what failed him on the night of the denial. The lesson is not Peter&rsquo;s courage &mdash; it is <em>Jesus&rsquo;s grip on Peter</em>: &ldquo;I have prayed for you that your faith may not fail&rdquo; (Luke 22:32). Keep returning there.'
+],
+scenes:[
+ {tag:'Matt 16:16, 22', head:'Always first to speak', body:'First to confess Christ, first to object to the cross. First to volunteer at the Transfiguration <q>not knowing what he said.</q> First out of the boat.'},
+ {tag:'Matt 14:28&ndash;31', head:'Big faith, big failure, one scene', body:'He alone walks on water &mdash; then sinks, crying <q>Lord, save me!</q> He swears he will die with Jesus, then denies him hours later.'},
+ {tag:'John 13:8&ndash;9', head:'All-or-nothing, never halfway', body:'At the footwashing he refuses outright, then swings to the opposite pole: <q>not my feet only but also my hands and my head!</q> Measured restraint was not in his repertoire.'},
+ {tag:'John 18:10 &middot; 6:68', head:'Physical, protective, tender', body:'He draws a sword in Gethsemane and takes off Malchus&rsquo;s ear. He is also the one who says <q>Lord, to whom shall we go? You have the words of eternal life.</q>'}
+],
+leadernote:'Resist the urge to make Peter a cautionary tale about being &ldquo;too much.&rdquo; His intensity is what Jesus <em>worked with</em>, not against. The issue was never his fire; it was where his confidence sat.',
+versus:{
+ aK:'What Peter got right', aQuote:'&ldquo;You are the Christ, the Son of the living God.&rdquo;',
+ aBody:'Matt 16:16, and Jesus says the revelation came from the Father himself. He nailed the <em>who</em>.',
+ bK:'What he completely missed', bQuote:'&ldquo;Get behind me, Satan&hellip; you are not setting your mind on the things of God.&rdquo;',
+ bBody:'Minutes later, when Jesus explains he must suffer and die, the same Peter rebukes him and hears the sharpest words Jesus ever spoke to a disciple. He missed the <em>how</em>.'
+},
+down:'Right about the identity. Wrong about the mission. That gap set up the denial.',
+after:'A second blind spot surfaces after Pentecost: Peter still assumed the gospel was for Jews. It took a rooftop vision and the Spirit falling on Cornelius&rsquo;s household for him to say &ldquo;God shows no partiality&rdquo; (Acts 10:34). Even then he wobbled &mdash; Paul confronted him at Antioch (Gal 2:11&ndash;14). Yet at the Jerusalem council it was Peter who stood and testified that God made no distinction (Acts 15:8&ndash;9). <b>Peter&rsquo;s growth was real but not finished &mdash; which is honest, and a relief.</b>',
+contribution:[
+ {dt:'Leader of the early church', dd:'&ldquo;On this rock I will build my church,&rdquo; and the keys of the kingdom (Matt 16:18&ndash;19). After the resurrection he steps into exactly that role.'},
+ {dt:'Pentecost', dd:'The man who denied Christ to a servant girl preaches to thousands fifty days later; about three thousand are added (Acts 2:41). Boldness finally anchored in the right place.'},
+ {dt:'The door to the Gentiles', dd:'Through Peter at Cornelius&rsquo;s house the gospel crosses the Jew/Gentile line (Acts 10) &mdash; arguably the hinge of the whole book of Acts.'},
+ {dt:'Scripture', dd:'1 and 2 Peter. The restored shepherd hands on his own commission to the elders: shepherd the flock, not domineering but as examples (1 Pet 5:2&ndash;3). &ldquo;Feed my sheep,&rdquo; passed down.'}
+],
+tradition:'<b>Mark&rsquo;s Gospel as Peter&rsquo;s eyewitness testimony</b>, written down by his companion Mark &mdash; <b>tradition, not Scripture</b> (from Papias, early 2nd century). His death: crucified in Rome under Nero, asking to be crucified upside down as unworthy to die as his Lord did &mdash; <b>tradition, not Scripture</b>. What Scripture does say is that Jesus foretold Peter would glorify God by his death, stretching out his hands (John 21:18&ndash;19).',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be more reliable than Peter&rdquo; lesson. Peter&rsquo;s reliability is the thing that failed. Look at the order: before Peter ever proves himself, Jesus restores him and re-commissions him. The grace comes <em>first</em>. And remember &mdash; back in Luke 22, before the denial even happened, Jesus had already said, <em>I have prayed for you that your faith may not fail.</em> Peter came back not because he was strong, but because Jesus prayed for him and came looking for him on that beach. That is the gospel. Jesus does the same for you.',
+ foot:'<b>Indicative before imperative.</b> The call (&ldquo;Follow me,&rdquo; 21:19) lands only after the grace (&ldquo;Do you love me / feed my sheep&rdquo;). We do not earn the restoration by following; we follow <b>out of</b> a restoration already given. And note the detail worth slowing down on: Peter denied Jesus at a <b>charcoal fire</b> (John 18:18), and the risen Jesus builds a <b>charcoal fire</b> on the beach (John 21:9). The same word, found only these two places in the New Testament. Jesus deliberately recreates the scene of the failure in order to heal it.'
+},
+questions:[
+ {lead:'Peter had huge faith and a huge failure in the same week.', rest:'Where do you notice that same mix in your own walk &mdash; moments of real boldness right next to real stumbling?'},
+ {lead:'Jesus renamed Simon &ldquo;Rock&rdquo; before he acted like one (John 1:42).', rest:'What does it do to you that Jesus calls you by who you will become in him, not just who you have been?'},
+ {lead:'Peter denied Jesus by a charcoal fire and was restored by another one.', rest:'Has Jesus ever met you right at the scene of a failure? What was that like &mdash; or what would it mean if he did?'},
+ {lead:'Jesus asked &ldquo;Do you love me?&rdquo; &mdash; not &ldquo;Are you sorry?&rdquo; or &ldquo;Will you do better?&rdquo;', rest:'Why do you think he led with love? What does that reveal about how Jesus restores people?', land:true},
+ {lead:'&ldquo;Feed my sheep&rdquo; was a job given to a man fresh off a bad failure.', rest:'Where might Jesus be calling you to serve out of restored grace rather than a proven track record &mdash; and what is holding you back from believing you are qualified?', land:true}
+],
+couples:'Is there a place you have written off your spouse (or yourself) the way Peter probably wrote himself off after the denial? What would it look like to extend the kind of restoration Jesus extended?',
+dry:'<em>&ldquo;What is the most Peter thing you have ever done?&rdquo;</em> It gets laughter and lowers the guard for the honest answers.',
+takeaway:'&ldquo;Jesus builds his church on forgiven people. Your failures are not the end of your usefulness &mdash; in his hands, they are often the <b>beginning</b> of it.&rdquo;',
+prayer:'Thank Jesus that our standing rests on his faithfulness, not ours &mdash; that he prays for us when our faith is failing, and comes looking for us at the scene of our worst moments. Ask him to make the group people who, like Peter, are restored <em>and sent</em>.',
+readaloud:'<b>Read at 0:08, back to back:</b> Luke 5:1&ndash;11, then John 21:15&ndash;19. The call and the restoration in one sitting lets the group hear the whole arc before you teach it &mdash; same lake, same nets, same man, three years apart.',
+anchors:[
+ {ref:'Luke 5:1&ndash;11', note:'the call; &ldquo;depart from me, I am a sinful man&rdquo;'},
+ {ref:'Matt 16:13&ndash;23', note:'the confession, then the rebuke'},
+ {ref:'Matt 14:28&ndash;31', note:'walking on water, then sinking'},
+ {ref:'Luke 22:31&ndash;34, 54&ndash;62', note:'&ldquo;I have prayed for you&rdquo;; the denial'},
+ {ref:'John 21:15&ndash;19', note:'the charcoal fire and the restoration'},
+ {ref:'Acts 2:14&ndash;41', note:'Pentecost; three thousand added'}
+],
+glance:[
+ {dt:'Names', dd:'Simon / Simeon &middot; Cephas (Aramaic) &middot; Peter (Greek <i>Petros</i>, rock)'},
+ {dt:'Home &amp; trade', dd:'Bethsaida, later Capernaum. Fisherman in partnership with Zebedee&rsquo;s sons. <span class="note">Married &mdash; Mark 1:30; 1 Cor 9:5</span>'},
+ {dt:'Standing', dd:'Inner three with James and John. Spokesman of the Twelve. The council called him uneducated and common (Acts 4:13).'},
+ {dt:'Wrote', dd:'1 and 2 Peter. <span class="note">Likely the source behind Mark&rsquo;s Gospel (tradition)</span>'}
+]
+});
+S.push({
+n:2, slug:'andrew', name:'Andrew', group:1,
+sub:'Simon Peter&rsquo;s brother &middot; the man who brought the rock',
+hook:'The quiet connector who always brings people to Jesus &mdash; faithfulness is measured by <em>who you get to Christ</em>, not by how big your platform is.',
+essence:'The quiet connector who always brings people to Jesus.',
+spine:[
+ {ref:'John 1:41&ndash;42 &middot; a brother', head:'He brought Peter', body:'His first recorded act as a follower: he goes and finds Simon. &ldquo;We have found the Messiah&hellip; He brought him to Jesus.&rdquo; Before Andrew does anything else, he hands Jesus the man who will lead the church.'},
+ {ref:'John 6:8&ndash;9 &middot; a boy&rsquo;s lunch', head:'He brought something small', body:'In a crowd of five thousand he spots five barley loaves and two fish, and says out loud &ldquo;but what are they for so many?&rdquo; He is not sure it matters. He brings it anyway.'},
+ {ref:'John 12:20&ndash;22 &middot; outsiders', head:'He brought the Greeks', body:'&ldquo;Sir, we wish to see Jesus.&rdquo; No turf, no gatekeeping, no screening the strangers out. He treats an outsider&rsquo;s interest in Jesus as something to carry straight to Jesus.'}
+],
+links:['Then the small','Then the outsider'],
+prep:[
+ 'Andrew is the perfect disciple to follow Peter, because he is the <b>opposite kind of man and the same kind of useful.</b> Where Peter is loud, first, and famous, Andrew is quiet, second, and largely overlooked &mdash; and yet every single time the Gospels show him, he is doing one thing: <b>bringing someone to Jesus.</b> He brings his brother, he brings a boy&rsquo;s lunch, he brings the outsiders.',
+ 'Tonight&rsquo;s job is to let the unsung people in the room &mdash; the ones who will never preach to thousands like Peter &mdash; see that Jesus delights to use the overshadowed, and that introducing people to Christ is real, frontline kingdom work.',
+ '<b>The trap to avoid:</b> &ldquo;Be a connector like Andrew.&rdquo; That subtly turns Andrew into a personality type to imitate, and quietly tells half the room they are failing at networking. The lesson is not Andrew&rsquo;s social gift &mdash; it is that <em>Andrew&rsquo;s whole significance is borrowed from the One he brings people to.</em> Keep the spotlight on Jesus, the destination, not Andrew, the usher.'
+],
+scenes:[
+ {tag:'John 1:41&ndash;42', head:'He brings people instinctively', body:'His first recorded act as a follower is fetching his brother. It is not a strategy. It is a reflex.'},
+ {tag:'John 12:20&ndash;22', head:'He is unterritorial', body:'When the Greeks come asking for Jesus, Andrew does not guard access or try to look important. He and Philip simply take them to Jesus.'},
+ {tag:'John 6:9', head:'He notices the overlooked', body:'In a crowd of thousands he is the one who spots a boy with a small lunch and brings it forward &mdash; even while saying <q>but what are they for so many?</q>'},
+ {tag:'John 1:40 &middot; 6:8', head:'He is content in the shadows', body:'He is forever introduced as <q>Simon Peter&rsquo;s brother.</q> The Gospels never record him fighting for the spotlight his brother had.'}
+],
+leadernote:'Resist reading Andrew as merely &ldquo;shy&rdquo; or &ldquo;the quiet one.&rdquo; His quietness isn&rsquo;t timidity &mdash; it&rsquo;s a settled, unanxious willingness to point away from himself and toward Jesus. <em>That is not a smaller faith than Peter&rsquo;s. It is a differently-shaped one Jesus used just as fully.</em>',
+versus:{
+ aK:'What the room assumes counts', aQuote:'&ldquo;Simon Peter&rsquo;s brother.&rdquo;',
+ aBody:'Andrew has almost no story of his own. No Andrew sermon, no Andrew letter, no Andrew leadership moment. He was never part of the inner three &mdash; Peter, James and John get the Transfiguration, Jairus&rsquo;s daughter, Gethsemane. Andrew does not.',
+ bK:'What actually counted', bQuote:'&ldquo;He first found his own brother Simon&hellip; He brought him to Jesus.&rdquo;',
+ bBody:'Every soul reached through Peter traces back, humanly speaking, to <em>a brother who simply went and got him.</em> The most strategic thing in the early church may have been one quiet introduction nobody applauded.'
+},
+down:'Get people to Jesus and let Jesus do the rest.',
+after:'Andrew seems to have grasped something early that took the others longer: <b>discipleship is personal introduction.</b> He saw following Jesus less as a position to hold and more as a person to share. And notice he didn&rsquo;t only connect the prominent. He connected the <b>small</b> (a boy&rsquo;s lunch) and the <b>outsider</b> (the Greeks). He didn&rsquo;t need to be the answer &mdash; he just needed to know where the answer was.',
+contribution:[
+ {dt:'He brought Peter', dd:'This is the headline. The man who preached at Pentecost, opened the door to the Gentiles, and was called the rock &mdash; Andrew brought him to Jesus first (John 1:41&ndash;42).'},
+ {dt:'The Bible&rsquo;s model connector', dd:'Three scenes, three introductions: his brother, the boy, the Greeks. The clearest New Testament picture of personal evangelism &mdash; not preaching to crowds, but one person at a time.'},
+ {dt:'Patron of the overlooked', dd:'Proof that you do not need a platform to be of enormous consequence in the kingdom.'},
+ {dt:'First to follow', dd:'He began as a disciple of John the Baptist, and left him the moment John said &ldquo;Behold, the Lamb of God&rdquo; (John 1:35&ndash;40).'}
+],
+tradition:'After Pentecost Andrew preached around <b>Scythia and Greece</b> and was crucified at <b>Patras</b> on an X-shaped cross &mdash; the St. Andrew&rsquo;s Cross &mdash; later becoming patron saint of <b>Scotland and Russia</b>. <b>All tradition, not Scripture.</b> The New Testament tells us nothing of his life after Acts 1:13.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be a better connector than Andrew&rdquo; lesson. If you walk out of here tonight just feeling guilty that you do not invite enough people to church, I have taught it wrong. Look at what actually makes Andrew matter: it is not Andrew at all &mdash; it is Jesus, the one he brings people to. Andrew&rsquo;s life is small and borrowed and pointed entirely away from himself, and Jesus made it count forever. That is grace. Jesus delights to use the overshadowed, the second-fiddle, the ones nobody films. You do not have to become impressive to be useful to him. You just have to know where Jesus is and be willing to point. He does the same with you that he did with Andrew &mdash; he takes a quiet, ordinary life and makes an eternal difference through it.',
+ foot:'<b>Indicative before imperative.</b> The reason we bring people to Jesus is not to earn significance &mdash; it is that Jesus is <em>worth</em> bringing people to, and he has already made our small offerings matter. We point <b>out of</b> a grace already given, not to prove our worth. The whole value of an usher is the room he gets you into. The whole value of a signpost is the destination it points at.'
+},
+questions:[
+ {lead:'Andrew spent his life in the shadow of his more famous brother.', rest:'How do you handle being the lesser-known one in a family, a job, or a friendship?'},
+ {lead:'Every time we meet Andrew, he is bringing someone to Jesus.', rest:'Who first brought <em>you</em>? And who might you be an Andrew to right now?'},
+ {lead:'Andrew offered a boy&rsquo;s small lunch, unsure it even mattered (John 6:9).', rest:'What small thing have you hesitated to offer because it felt too little to bother with?'},
+ {lead:'Where are you tempted to measure your worth by visibility', rest:'&mdash; by how seen or impressive you are &mdash; rather than by faithfulness?', land:true},
+ {lead:'What would actually change this week', rest:'if you saw introducing people to Jesus as your main job, the way Andrew did?', land:true}
+],
+couples:'In your marriage, is there a quiet, Andrew role one of you carries that rarely gets noticed or thanked? Take a minute to name it out loud for each other &mdash; and ask whether you have been measuring each other by platform instead of faithfulness.',
+dry:'<em>&ldquo;Who is the most behind-the-scenes person you know who actually holds everything together &mdash; and does anyone ever thank them?&rdquo;</em> It surfaces the unsung-faithfulness theme fast, and usually someone in the room <b>is</b> that person.',
+takeaway:'&ldquo;You don&rsquo;t need a platform to be of eternal consequence. Andrew&rsquo;s whole job was <b>knowing where Jesus was and bringing people to him</b> &mdash; and Jesus is honored to do the very same thing through your quiet, ordinary life.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he uses the overshadowed and the unseen, that no offering brought to him is too small to matter, and that our significance rests not on our visibility but on who we belong to. Ask him to make the group people who, like Andrew, instinctively bring others to Christ &mdash; and who are content to let him be the One everyone remembers.',
+readaloud:'<b>Read at 0:08, back to back:</b> John 1:35&ndash;42 (Andrew follows Jesus and immediately goes to get his brother), then John 6:8&ndash;9 (Andrew points out the boy with the loaves and fish). Reading these together lets the group hear Andrew&rsquo;s signature move twice &mdash; bringing a <em>person</em>, then bringing a <em>small offering</em> &mdash; before you teach it.',
+anchors:[
+ {ref:'John 1:35&ndash;42', note:'follows Jesus, then brings his brother'},
+ {ref:'Mark 1:16&ndash;18 &middot; Matt 4:18&ndash;20', note:'called from the nets; immediately they left them'},
+ {ref:'John 6:8&ndash;9', note:'the boy with five loaves and two fish'},
+ {ref:'John 12:20&ndash;22', note:'brings the inquiring Greeks to Jesus'},
+ {ref:'Acts 1:13', note:'the last mention of him in Scripture'}
+],
+glance:[
+ {dt:'Name', dd:'Andrew, Greek <i>Andreas</i>, &ldquo;manly&rdquo; <span class="note">&mdash; always introduced as Simon Peter&rsquo;s brother</span>'},
+ {dt:'Home &amp; trade', dd:'Bethsaida (John 1:44); fisherman on the Sea of Galilee. A common working man, not a scholar.'},
+ {dt:'Started with the Baptist', dd:'One of John the Baptist&rsquo;s disciples, among the first to follow Jesus. <span class="note">Not part of the inner three</span>'},
+ {dt:'Three signature scenes', dd:'Brings Peter (John 1) &middot; brings the boy&rsquo;s lunch (John 6) &middot; brings the Greeks (John 12)'}
+]
+});
+S.push({
+n:3, slug:'james-zebedee', name:'James, son of Zebedee', group:1,
+sub:'Son of Thunder &middot; first of the Twelve to die',
+hook:'Raw ambition refined. Jesus didn&rsquo;t crush James&rsquo;s drive &mdash; he <em>redirected</em> it, from a throne to a cup.',
+essence:'Ambition refined. The first apostle martyred.',
+spine:[
+ {ref:'Mark 10:37 &middot; the ask', head:'He asked for a throne', body:'&ldquo;Grant us to sit, one at your right hand and one at your left, in your glory.&rdquo; Unembarrassed, and on the record.'},
+ {ref:'Mark 10:38, 43&ndash;45 &middot; the hinge', head:'He was handed a cup', body:'&ldquo;Are you able to drink the cup that I drink?&rdquo; Not a rebuke of the hunger. A new aim for it: whoever would be great must serve.'},
+ {ref:'Acts 12:1&ndash;2 &middot; the cup arrives', head:'He drank it first', body:'Herod killed him with the sword. The man who said &ldquo;We are able&rdquo; proved it &mdash; and got the place beside Jesus he had asked for.', cost:true}
+],
+links:['Jesus redirects','c. AD 44'],
+prep:[
+ 'James is the right disciple for the night after Andrew because he is Andrew&rsquo;s opposite number and a different kind of mirror. Where Andrew quietly brought people to Jesus, James wanted a throne. He is the ambitious one &mdash; intense, zealous, hungry for greatness &mdash; and <b>Jesus chose him on purpose</b>, named his fire &ldquo;thunder,&rdquo; then spent three years pointing that drive somewhere new.',
+ 'Nearly everyone in the room carries some version of James&rsquo;s hunger: to matter, to win, to be near the top. Tonight&rsquo;s job is to let the group feel that drive named honestly, then watch Jesus do what he does with it &mdash; not delete it, but re-aim it.',
+ '<b>The trap to avoid:</b> &ldquo;Be ambitious and bold like James.&rdquo; That gets it exactly backward. His ambition is the thing Jesus had to <em>redirect</em>; he asked for glory and was offered suffering. The lesson is not James&rsquo;s drive &mdash; it is where Jesus aimed it. <b>The drive isn&rsquo;t the problem. Its direction is.</b>'
+],
+scenes:[
+ {tag:'Mark 3:17', head:'Jesus names the voltage', body:'<q>Boanerges</q> &mdash; Sons of Thunder. Not a name for what was wrong with them. A name for the raw material he intended to use.'},
+ {tag:'Luke 9:54&ndash;55', head:'Fire on the Samaritans', body:'A village will not receive Jesus, so James asks whether to call down fire. Jesus <q>turned and rebuked them.</q> Thunder unaimed: real devotion, wrong target.'},
+ {tag:'Mark 10:37', head:'The seats, out loud', body:'He and John want the top two places in the kingdom &mdash; and they want it on the record. It made the other ten indignant.'},
+ {tag:'Mark 10:38&ndash;39', head:'&ldquo;We are able&rdquo;', body:'Asked whether he can drink the cup, James does not flinch. He does not yet grasp what the cup is &mdash; but that same fearlessness put him first in line at the sword.'}
+],
+leadernote:'Resist making James a cautionary tale about being &ldquo;too ambitious.&rdquo; His drive is what Jesus <em>worked with</em>, not against &mdash; Jesus picked him for the inner three. The issue was never the size of his fire; it was the direction he was pointing it.',
+versus:{
+ aK:'What James pictured', aQuote:'&ldquo;Grant us to sit, one at your right hand and one at your left, in your glory.&rdquo;',
+ aBody:'Not a crazy hope &mdash; Jesus <em>had</em> promised the Twelve would sit on thrones (Matt 19:28). James simply assumed the road there ran upward: position, status, rank.',
+ bK:'What Jesus offered', bQuote:'&ldquo;You do not know what you are asking. Are you able to drink the cup that I drink?&rdquo;',
+ bBody:'In Scripture the cup is suffering. He asked for a crown and was handed a cup &mdash; then given the kingdom&rsquo;s deepest logic: <em>whoever would be great among you must be your servant.</em>'
+},
+down:'In the kingdom, the way up is down.',
+after:'This is honest territory for a small group. Most of us are some mix of James &mdash; we want the reward and would just as soon skip the cost. <b>Jesus doesn&rsquo;t shame the desire to be near him.</b> He just keeps telling the truth about what the path actually is.',
+contribution:[
+ {dt:'Inner-circle eyewitness', dd:'Jairus&rsquo;s house (Mark 5:37), the Transfiguration (Matt 17:1&ndash;8), Gethsemane (Mark 14:33). He saw the glory and the agony up close.'},
+ {dt:'First apostle to die', dd:'Herod Agrippa I killed him with the sword, c. AD 44 (Acts 12:1&ndash;2). Of all the Twelve, James paid first.'},
+ {dt:'A word of Jesus fulfilled', dd:'&ldquo;The cup that I drink you will drink&rdquo; (Mark 10:39). His death is that cup arriving, exactly as Jesus said.'},
+ {dt:'A pattern for the rest', dd:'He wrote no letter and opened no door to the Gentiles. His contribution was his life.'}
+],
+tradition:'Later traditions place James in Spain before his death. <b>Tradition, not Scripture</b> &mdash; and historically thin. Best left aside. Two inferences worth naming honestly too: he was <em>likely</em> the older brother of John (from name order, always &ldquo;James and John&rdquo;), and his mother was <em>likely</em> Salome (from the women named at the cross, Mark 15:40 and Matt 27:56). Reasonable inferences, not stated facts.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;go be more ambitious and bold like James&rdquo; lesson. James&rsquo;s raw ambition, pointed at a throne, is the thing Jesus had to redirect. Look at what Jesus actually does: he does not kill the drive, and he does not reward the power-grab &mdash; he aims the hunger at a cup and calls it greatness. And notice the order. Before James ever drank that cup, Jesus had already drunk his &mdash; <em>the Son of Man came to give his life as a ransom for many.</em> Jesus goes to the cross first; only then does James follow. The same Jesus who took James&rsquo;s misaimed ambition and redirected it toward something real does the exact same thing with the drive in you. He does not ask you to want less. He asks to aim it.',
+ foot:'<b>Indicative before imperative.</b> The call to drink the cup (10:39) only makes sense because Jesus drinks his cup first and gives his life as the ransom (10:45). We do not suffer our way to a seat beside Jesus &mdash; we follow <b>out of</b> a place he already secured for us at the cross. And the grace hiding in plain sight: <b>James got exactly what he asked for.</b> He wanted a place next to Jesus, and he received it &mdash; not by lording it over the other ten, but by being first of them to share his cup.'
+},
+questions:[
+ {lead:'James asked for the glory; Jesus offered him the cup (Mark 10:37&ndash;38).', rest:'Where in your own life have you wanted the reward without the cost?'},
+ {lead:'Jesus redirected the ambition rather than killing it.', rest:'What God-given drive in you needs re-aiming more than suppressing?'},
+ {lead:'&ldquo;Son of Thunder&rdquo; was a real, named trait (Mark 3:17).', rest:'What is the thunder in you &mdash; your intensity, your edge? And right now, is Jesus using it or taming it?'},
+ {lead:'James was first of the Twelve to die for Jesus (Acts 12:2).', rest:'What would following Jesus actually cost you this year &mdash; and are you willing?', land:true},
+ {lead:'James and John served side by side as brothers.', rest:'Who is your partner in the work &mdash; and how are the two of you sharpening each other?', land:true}
+],
+couples:'James and John were family pulling in the same direction, most of the time. Where are you and your spouse aiming your shared thunder at the same goal &mdash; and where is one of you asking for a throne while the other is being handed a cup? What would it look like to want greatness the way Jesus defined it, together?',
+dry:'<em>&ldquo;If you could pick any seat in any room &mdash; the boardroom, the platform, the head of the table &mdash; which one have you secretly wanted? Now ask: why that one?&rdquo;</em> It surfaces the throne-hunger honestly and lowers the guard before question 1.',
+takeaway:'&ldquo;Jesus doesn&rsquo;t ask you to want less. He asks you to <b>aim it.</b> The drive isn&rsquo;t the problem &mdash; its direction is.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he goes to the cross first, drinking his cup so that any cup we are handed is one he has already walked through ahead of us. Ask him to take the drive in each person in the room, name it honestly, and aim it at real greatness: serving, following, and being near him whatever it costs.',
+readaloud:'<b>Read at 0:08, back to back:</b> Mark 10:35&ndash;45, then Acts 12:1&ndash;2. The request and the death in one sitting lets the room hear the whole arc at once &mdash; the man who asked to sit in glory became the first to drink the cup. Same man, same drive, pointed all the way through.',
+anchors:[
+ {ref:'Mark 1:19&ndash;20', note:'the call; they leave the boat, the nets, and their father'},
+ {ref:'Mark 3:17', note:'Boanerges, Sons of Thunder'},
+ {ref:'Luke 5:10', note:'the family fished in partnership with Simon Peter'},
+ {ref:'Luke 9:51&ndash;56', note:'fire on the Samaritans'},
+ {ref:'Mark 10:35&ndash;45', note:'the thrones, the cup, and true greatness'},
+ {ref:'Matt 17:1&ndash;8', note:'the Transfiguration'},
+ {ref:'Acts 12:1&ndash;2', note:'killed by the sword, c. AD 44'}
+],
+glance:[
+ {dt:'Name', dd:'James, son of Zebedee <span class="note">&mdash; Son of Thunder, with his brother John</span>'},
+ {dt:'Home &amp; trade', dd:'Sea of Galilee; commercial fisherman. Zebedee employed hired servants (Mark 1:20).'},
+ {dt:'Inner three', dd:'With Peter and John &mdash; Jairus, the Transfiguration, Gethsemane.'},
+ {dt:'Death', dd:'Killed by Herod Agrippa I&rsquo;s sword, c. AD 44. First of the Twelve to be martyred.'}
+]
+});
+S.push({
+n:4, slug:'john', name:'John', group:1,
+sub:'Son of Zebedee &middot; the disciple whom Jesus loved',
+hook:'Thunder transformed into love &mdash; a Son of Thunder who wanted to call down fire became the apostle who could write <em>God is love.</em>',
+essence:'Thunder transformed into love.',
+spine:[
+ {ref:'Luke 9:54 &middot; the young man', head:'He wanted to burn a village', body:'A Samaritan town will not receive Jesus, so John asks whether to call down fire on it. Jesus turns and rebukes him.'},
+ {ref:'John 13:23 &middot; the table', head:'He leaned on Jesus instead', body:'At the Last Supper he is reclining at Jesus&rsquo;s side, literally leaning back against him. The man who wanted the seat of power is found in the seat of closeness.'},
+ {ref:'1 John 4:19 &middot; the old apostle', head:'&ldquo;We love because he first loved us&rdquo;', body:'Decades later the ladder is gone entirely. Love is the response, never the effort. Same man, a lifetime of Jesus in between.'}
+],
+links:['Decades of Jesus','The overflow'],
+prep:[
+ 'John is the clearest picture in the Twelve of <b>slow, grace-driven transformation.</b> He does not change in a single dramatic scene the way Peter does on the beach &mdash; he changes over <em>decades</em>. The fiery young man who wanted to incinerate a Samaritan village is the same man who, as an old apostle, kept repeating &ldquo;little children, love one another.&rdquo;',
+ 'That arc is hope for anyone in the room who feels like they are changing too slowly. Tonight&rsquo;s job is to let the group watch Jesus do patient, long work in a hot-tempered man &mdash; and to make sure they see that the love John ended up famous for was always a <em>response</em>, never an achievement.',
+ '<b>The trap to avoid:</b> &ldquo;Love more like John by trying harder.&rdquo; This is the exact mistake. John never tried his way into love &mdash; he <em>received</em> it for decades until it remade him. His own name for himself was &ldquo;the disciple whom Jesus loved.&rdquo; Keep returning to his anchor verse: <b>we love because he first loved us</b> (1 John 4:19). The love comes second. The being-loved comes first.'
+],
+scenes:[
+ {tag:'Mark 3:17', head:'Hot-tempered by name', body:'Jesus nicknamed James and John <q>Boanerges, Sons of Thunder</q> &mdash; a name you do not earn by being mild.'},
+ {tag:'Luke 9:54&ndash;55', head:'Ready to call down fire', body:'When a Samaritan village will not receive Jesus, John asks, <q>Lord, do you want us to tell fire to come down from heaven and consume them?</q> Jesus <q>turned and rebuked them.</q>'},
+ {tag:'Mark 9:38&ndash;40', head:'Exclusive and territorial', body:'<q>We saw someone casting out demons in your name, and we tried to stop him, because he was not following us.</q> Jesus: <q>Do not stop him&hellip; the one who is not against us is for us.</q>'},
+ {tag:'Mark 10:37', head:'Ambitious', body:'With James, and through their mother (Matt 20:20&ndash;21), he asks for the two best seats <q>in your glory.</q> It made the other ten indignant.'}
+],
+leadernote:'Don&rsquo;t soften young John into a misunderstood sweetheart. He really was zealous, status-hungry, and quick to draw lines. The point isn&rsquo;t that John was secretly nice all along &mdash; it&rsquo;s that Jesus took a genuinely combustible personality and, over a long time, turned the heat into warmth. <em>Same fire, redirected.</em>',
+versus:{
+ aK:'Early John: greatness as a ladder', aQuote:'&ldquo;Teacher, we tried to stop him, because he was not following us.&rdquo;',
+ aBody:'Burn the village that rejects Jesus, shut down the outsider doing ministry the wrong way, secure the throne seat. He wanted to be <em>near the top</em> and to put down what threatened him.',
+ bK:'Old John: love as the whole framework', bQuote:'&ldquo;Beloved, let us love one another, for love is from God&hellip; God is love.&rdquo;',
+ bBody:'And he never grounds it in human effort: <em>in this is love, not that we have loved God but that he loved us and sent his Son to be the propitiation for our sins</em> (1 John 4:10).'
+},
+down:'The man who wanted the seat of power was found in the seat of closeness.',
+after:'<b>John&rsquo;s growth was real, slow, and entirely Jesus&rsquo;s doing</b> &mdash; which is honest, and a relief for anyone who feels stuck. Watch the quiet repositioning at the table: John is reclining at Jesus&rsquo;s side, and it is John that Peter signals to ask Jesus the hard question (John 13:23&ndash;25). That is the whole movement of his life in one image.',
+contribution:[
+ {dt:'The eyewitness Gospel', dd:'The most theologically rich and personal of the four, written so that &ldquo;you may believe that Jesus is the Christ&hellip; and that by believing you may have life in his name&rdquo; (John 20:31).'},
+ {dt:'The letters of assurance', dd:'1, 2 and 3 John &mdash; short, pastoral, repetitive on purpose: love one another, and &ldquo;that you may know that you have eternal life&rdquo; (1 John 5:13). Written to give ordinary believers confidence, not anxiety.'},
+ {dt:'Revelation', dd:'Written &ldquo;on the island called Patmos on account of the word of God&rdquo; (Rev 1:9) &mdash; a vision of the risen, reigning Christ given to a faithful old man in exile.'},
+ {dt:'He cared for Mary', dd:'From the cross Jesus entrusted his own mother to John: &ldquo;Behold, your mother!&rdquo; And from that hour the disciple took her to his own home (John 19:26&ndash;27). The legacy is not only what he wrote &mdash; it is who he carried.'}
+],
+tradition:'John ministered for many years at <b>Ephesus</b>, was exiled to <b>Patmos</b>, and died of old age &mdash; the only one of the Twelve not martyred. <b>Tradition, not Scripture</b>, though the Patmos exile itself is stated in Rev 1:9. Also tradition: that as a very old man he kept saying, &ldquo;Little children, love one another,&rdquo; because &ldquo;it is the Lord&rsquo;s command, and if this only is done, it is enough.&rdquo;',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be more loving than you are, try harder, white-knuckle your temper&rdquo; lesson. That is the very thing John never did. Look at the order of his own sentence: <em>we love because he first loved us.</em> The being-loved comes first; the loving comes second, as the overflow. John&rsquo;s secret was not his effort &mdash; it was his name for himself: <em>the one Jesus loves.</em> If you walked out of here tonight just trying to love more, you would be doing the opposite of what John did. The invitation is to do what he did &mdash; to rest in being loved by Jesus until that love starts to leak out of you. He loves you the same way he loved John.',
+ foot:'<b>Indicative before imperative.</b> &ldquo;Love one another&rdquo; (the command) only ever lands <em>after</em> &ldquo;God is love&hellip; he first loved us&rdquo; (the gift). We don&rsquo;t manufacture the love; we receive it, and it remakes us &mdash; slowly, like it did John. And notice what he could have called himself: Son of Thunder, son of Zebedee, one of the inner three, the last surviving apostle, the man who stood at the cross. <b>Instead, every time, he reaches for &ldquo;the one Jesus loves.&rdquo;</b> Not &ldquo;the one who loved Jesus best.&rdquo; His whole identity rested on the direction of that love.'
+},
+questions:[
+ {lead:'John went from wanting to call down fire to writing &ldquo;God is love.&rdquo;', rest:'What slow transformation has Jesus been working in you over years &mdash; something that is still in progress?'},
+ {lead:'John&rsquo;s identity was &ldquo;the one Jesus loves.&rdquo;', rest:'If you actually introduced yourself that way, what would change about how you live this week?'},
+ {lead:'At the cross, Jesus handed John a new responsibility &mdash; caring for Mary.', rest:'Who has God placed in your care that you did not choose? How are you carrying it?'},
+ {lead:'John leaned on Jesus at the table.', rest:'What does unhurried closeness with Jesus look like in your week &mdash; and when did you last actually have it?', land:true},
+ {lead:'John was still preaching &ldquo;love one another&rdquo; in old age.', rest:'What truth do you want to still be living out decades from now?', land:true}
+],
+couples:'John spent years simply receiving Jesus&rsquo;s love before it overflowed toward others. Where in your marriage are you running on empty &mdash; trying to love your spouse out of effort instead of out of being loved by Jesus first? What would it look like this week to receive before you try to give?',
+dry:'<em>&ldquo;What is something about yourself you would love for Jesus to change &mdash; but that feels like it is taking forever?&rdquo;</em> It gives people permission to be a work in progress, which is exactly John&rsquo;s story.',
+takeaway:'&ldquo;You don&rsquo;t become loving by trying harder &mdash; you become loving by <b>resting longer in being loved.</b> We love because he first loved us.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he is not in a hurry with us &mdash; that he takes Sons of Thunder and, over a lifetime, makes them gentle. Thank him that our identity can be the same as John&rsquo;s: &ldquo;the one Jesus loves.&rdquo; Ask him to let the group rest in his love until it overflows &mdash; not to strive their way into a softness only he can grow.',
+readaloud:'<b>Read at 0:08, back to back:</b> Luke 9:51&ndash;56 (the village John wanted to burn), then 1 John 4:7&ndash;12 (the love he later wrote about). Reading the fire passage and the &ldquo;God is love&rdquo; passage back to back lets the group hear the whole transformation in one sitting &mdash; same man, same heart, a lifetime of Jesus apart.',
+anchors:[
+ {ref:'Mark 1:19&ndash;20', note:'called with his brother James'},
+ {ref:'Mark 3:17', note:'Boanerges, Sons of Thunder'},
+ {ref:'Luke 9:54', note:'wants to call down fire'},
+ {ref:'Mark 9:38', note:'tries to stop an outsider'},
+ {ref:'John 13:23&ndash;25', note:'reclining at Jesus&rsquo;s side'},
+ {ref:'John 19:26&ndash;27', note:'at the cross, given Jesus&rsquo;s mother'},
+ {ref:'John 20:1&ndash;9', note:'the empty tomb; saw and believed'},
+ {ref:'1 John 4:7&ndash;12, 19', note:'we love because he first loved us'},
+ {ref:'Rev 1:9', note:'exiled on Patmos'}
+],
+glance:[
+ {dt:'Names', dd:'John, son of Zebedee &middot; Son of Thunder &middot; <span class="note">the disciple whom Jesus loved</span>'},
+ {dt:'Home &amp; trade', dd:'Galilee; fisherman in the family business with hired servants (Mark 1:20). Later ministry at Ephesus <span class="note">(tradition)</span>'},
+ {dt:'Family', dd:'Brother of James, the previous session. Inner three with Peter and James.'},
+ {dt:'Wrote', dd:'Gospel of John &middot; 1, 2 and 3 John &middot; Revelation, from exile on Patmos'}
+]
+});
+S.push({
+n:5, slug:'philip', name:'Philip', group:2,
+sub:'Of Bethsaida &middot; the disciple who wanted to be shown',
+hook:'The practical &ldquo;show me&rdquo; disciple Jesus kept stretching &mdash; and met not with a rebuke, but <em>with himself.</em>',
+essence:'The practical show-me disciple Jesus stretched.',
+warn:'<b>Get the name straight before you teach.</b> This is <b>Philip the apostle</b>, one of the Twelve. He is <b>NOT</b> Philip the Evangelist, the deacon chosen in Acts 6 who later preaches in Samaria and to the Ethiopian eunuch in Acts 8. Two different Philips, easy to confuse. If anyone brings up the Ethiopian eunuch, that is the <em>other</em> Philip. Tonight is the man Jesus called by the Jordan in John 1.',
+spine:[
+ {ref:'John 1:46 &middot; the instinct', head:'&ldquo;Come and see&rdquo;', body:'Nathanael pushes back &mdash; can anything good come out of Nazareth? Philip does not argue him into it or win the debate. He brings the skeptic to Jesus and lets Jesus do the rest.'},
+ {ref:'John 6:7 &middot; the test', head:'He did the math instead', body:'Asked how to feed the crowd, he prices it: two hundred denarii, roughly eight months&rsquo; wages, and still not enough. The math was right. It was also completely beside the point.'},
+ {ref:'John 14:8&ndash;9 &middot; the answer', head:'&ldquo;Whoever has seen me&rdquo;', body:'After three years he still asks to be shown the Father. Jesus does not perform a new sign. He points Philip back to himself as the evidence.'}
+],
+links:['Then the test','Then the gift'],
+prep:[
+ 'Philip is the right disciple for the analytical, level-headed people in the room &mdash; the cost-counters, the &ldquo;let me see the numbers first&rdquo; believers. His faith is real but <b>bounded by the calculable</b>: he wants things demonstrated, shown, added up before he is all in. Across four scenes in John, Jesus keeps gently stretching that boundary.',
+ 'Tonight&rsquo;s job is to let the practical people in the room feel <em>seen</em>, and then show them where Jesus points the show-me heart &mdash; not to bigger faith, but to himself. The climax in John 14:9 is one of the most tender lines in the Gospels.',
+ '<b>The trap to avoid:</b> &ldquo;Have more faith like Philip should have.&rdquo; That flips the point upside down. Philip&rsquo;s problem was never that he needed to <em>manufacture</em> more belief &mdash; it is that he kept looking for evidence <em>next to</em> Jesus when the evidence was standing in front of him. The line is never &ldquo;do the math better next time.&rdquo; It is <b>Christ himself is the evidence the practical heart is looking for.</b>'
+],
+scenes:[
+ {tag:'John 6:7', head:'He thinks in numbers', body:'<q>Two hundred denarii worth of bread would not be enough for each of them to get a little.</q> Roughly eight months&rsquo; wages &mdash; and his point is that even that would not cover it. He sized up the problem before he sized up the One asking.'},
+ {tag:'John 14:8', head:'He is literal', body:'Jesus has been speaking about the Father, and Philip takes it straight: <q>Lord, show us the Father, and it is enough for us.</q> He wants a concrete, visible demonstration.'},
+ {tag:'John 1:46 &middot; 6:7 &middot; 14:8', head:'He wants to be shown', body:'Notice the pattern. With Nathanael, <q>come and see.</q> With the crowd, count the cost. With the Father, show us. Philip is constantly oriented toward evidence he can verify.'},
+ {tag:'John 1:45 &middot; 12:21', head:'But he brings people in', body:'For all his caution, his reflex is to connect seekers to Jesus &mdash; Nathanael first, later the Greeks. Not a closed-off skeptic; a careful man who, once he has seen, cannot help bringing others to see.'}
+],
+leadernote:'Don&rsquo;t paint Philip as the &ldquo;weak faith&rdquo; disciple. His practicality is a <em>gift</em> &mdash; every group needs the person who asks the hard logistical question. The issue was never that he was too analytical; it was <em>where he aimed his analysis.</em> He kept measuring the problem instead of measuring the Person standing in front of him.',
+versus:{
+ aK:'What Philip kept asking for', aQuote:'&ldquo;Lord, show us the Father, and it is enough for us.&rdquo;',
+ aBody:'An honest, almost wistful request &mdash; <em>just show me, and I will be satisfied.</em> The most honest prayer of a practical heart.',
+ bK:'What Jesus actually said', bQuote:'&ldquo;Have I been with you so long, and you still do not know me, Philip? Whoever has seen me has seen the Father.&rdquo;',
+ bBody:'Not a rebuke for being analytical. Not a new sign. The proof was not going to arrive later in a clearer form. <em>The proof was a Person, already given.</em>'
+},
+down:'He could ask the right question and look in the wrong direction.',
+after:'At the feeding, John tells us something crucial: Jesus asked Philip how to feed the crowd <b>&ldquo;to test him, for he himself knew what he would do&rdquo;</b> (John 6:6). It was not a real request for a logistics plan. It was a test of where Philip would look &mdash; and Philip looked at the bank account. A relief for the room: <b>Jesus never shames Philip for it.</b> The show-me heart is not rebuked. It is answered.',
+contribution:[
+ {dt:'He brought Nathanael', dd:'His &ldquo;come and see&rdquo; (John 1:46) put one of the Twelve in front of Jesus. He did not win the argument; he made the introduction and trusted Jesus to do the convincing.'},
+ {dt:'Contact point for the Greeks', dd:'In John 12 the seeking Greeks approach <em>Philip</em> &mdash; &ldquo;Sir, we wish to see Jesus.&rdquo; He does not act alone; he tells Andrew, and the two of them go to Jesus together.'},
+ {dt:'Evangelism for ordinary people', dd:'Philip never has the eloquent answer. His whole ministry is &ldquo;come and see&rdquo; &mdash; bring the seeker, the skeptic, the outsider, and let them meet Jesus for themselves.'},
+ {dt:'Always fifth on the list', dd:'He appears in every apostle list: Matt 10:3, Mark 3:18, Luke 6:14, Acts 1:13. His Greek name (<i>Philippos</i>, lover of horses) fits a mixed Greek-Jewish region &mdash; and may be why Greek-speaking inquirers sought him out.'}
+],
+tradition:'Philip&rsquo;s later ministry in <b>Phrygia</b> (Asia Minor), with martyrdom at <b>Hierapolis</b> &mdash; <b>tradition, not Scripture.</b> The New Testament tells us nothing about how Philip the apostle died. And say the other clarification out loud if it helps the room: the Philip who preaches to the Ethiopian eunuch in Acts 8 is a <em>different</em> Philip.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;figure out how to believe harder&rdquo; lesson. Philip did not need to manufacture faith &mdash; he needed to look in the right direction. He kept doing the math, counting the cost, asking to be shown, and the whole time the answer was the One standing in front of him. So hear this clearly: when your practical, realistic heart says <em>just show me, God, and I will trust you</em> &mdash; Jesus&rsquo;s answer is <em>himself.</em> Christ is the evidence the practical heart is looking for. You do not have to get the numbers to add up before you will trust him. You look at <em>him</em> &mdash; at who he is, what he did at the cross, that he came looking for you the way he came looking for Philip &mdash; and you find that he is already the proof you were waiting for.',
+ foot:'<b>Indicative before imperative.</b> Jesus answers Philip&rsquo;s request with a <em>gift</em> &mdash; you have already seen the Father, because you have seen me &mdash; before he ever asks anything more of him. We don&rsquo;t earn the demonstration by believing harder; we trust <b>because</b> the demonstration has already been given in Christ. Worth noting too: Philip&rsquo;s call is unusual. Nobody brought him. <b>Jesus found Philip</b> and said &ldquo;Follow me&rdquo; (John 1:43).'
+},
+questions:[
+ {lead:'Philip saw the hungry crowd and instantly did the discouraging math (John 6:7).', rest:'When does your practical realism quietly become a faith-killer &mdash; where being realistic is really just leaving God out of the equation?'},
+ {lead:'Jesus already knew what he would do, but tested Philip first (John 6:6).', rest:'How do you respond when God lets you face a problem with no visible solution? What does your first reaction reveal about where you are looking?'},
+ {lead:'Philip&rsquo;s move with Nathanael was &ldquo;come and see&rdquo; &mdash; not an argument, just an invitation.', rest:'Who in your life needs a low-pressure &ldquo;come and see&rdquo; from you right now?'},
+ {lead:'&ldquo;Show us the Father&rdquo; &mdash; Philip wanted more proof after years with Jesus.', rest:'What &ldquo;more&rdquo; are you quietly waiting for &mdash; more clarity, more security, more evidence &mdash; before you will fully trust him?', land:true},
+ {lead:'Where is Jesus inviting you to act <em>before</em> the numbers add up?', rest:'What is the step where you can see the cost clearly but not the outcome?', land:true}
+],
+couples:'Is there a decision where one of you is the Philip, counting the cost, and the other is ready to step out? How could you honor both &mdash; taking the practical realism seriously <em>and</em> refusing to let it have the final word over what God might do?',
+dry:'<em>&ldquo;When was the last time you did the math on something and it talked you out of a step of faith?&rdquo;</em> It gets the practical people talking honestly without feeling judged for being practical.',
+takeaway:'&ldquo;When your practical heart says <b>just show me</b>, Jesus&rsquo;s answer is <b>himself.</b> You don&rsquo;t have to make the numbers add up before you trust him &mdash; Christ is already the evidence you were looking for.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he does not shame the analytical, cautious, show-me hearts in the room &mdash; he meets them with himself. Ask him to help the practical people trust the One standing in front of them, to act before the math is finished, and to be people who, like Philip, simply bring others to come and see.',
+readaloud:'<b>Read at 0:08, back to back:</b> John 1:43&ndash;46 (the call and &ldquo;come and see&rdquo;), then John 14:8&ndash;9 (&ldquo;Lord, show us the Father&rdquo;). The first scene and the last one together let the group hear the whole arc before you teach it &mdash; the man who said &ldquo;come and see&rdquo; to Nathanael at the beginning is, years later, still asking Jesus to show him.',
+anchors:[
+ {ref:'John 1:43&ndash;46', note:'Jesus finds Philip; &ldquo;come and see&rdquo;'},
+ {ref:'John 6:5&ndash;7', note:'Jesus tests him about feeding the crowd'},
+ {ref:'John 12:20&ndash;22', note:'the seeking Greeks, with Andrew'},
+ {ref:'John 14:8&ndash;9', note:'&ldquo;show us the Father&rdquo;; whoever has seen me'},
+ {ref:'Matt 10:3 &middot; Mark 3:18 &middot; Luke 6:14 &middot; Acts 1:13', note:'always fifth in the lists'}
+],
+glance:[
+ {dt:'Name', dd:'Philip, Greek <i>Philippos</i>, &ldquo;lover of horses&rdquo;'},
+ {dt:'Home', dd:'Bethsaida &mdash; &ldquo;the city of Andrew and Peter&rdquo; (John 1:44). The same fishing town produced three of the Twelve.'},
+ {dt:'His call', dd:'Sought out directly. <span class="note">Jesus found Philip and said &ldquo;Follow me&rdquo; (John 1:43)</span>'},
+ {dt:'Not to be confused with', dd:'Philip the Evangelist, the deacon of Acts 6 and 8. A different man.'}
+]
+});
+S.push({
+n:6, slug:'bartholomew', name:'Bartholomew / Nathanael', group:2,
+sub:'Of Cana in Galilee &middot; the man with no guile',
+hook:'The man with no guile &mdash; who started with a sneer and ended on his knees, because <em>Jesus already knew him before he ever knew Jesus.</em>',
+essence:'The man with no guile. Skeptic to worshiper in sixty seconds.',
+warn:'<b>One identification note, so you can say it cleanly.</b> The man called <b>Bartholomew</b> in the three Synoptic lists and in Acts is, by long tradition, the same man <b>John</b> calls <b>Nathanael</b>. Scripture never says so directly. The case: Bartholomew is a patronymic &mdash; <i>Bar-Tolmai</i>, son of Tolmai &mdash; not really a first name, so a personal name like Nathanael fits naturally alongside it; and in the Gospel lists Bartholomew is paired with Philip, who is exactly the man who brings Nathanael to Jesus in John 1. The common and likely view, <b>but a traditional identification, not a stated fact of Scripture.</b> Say it that way to the group.',
+spine:[
+ {ref:'John 1:46 &middot; the wall', head:'&ldquo;Can anything good come out of Nazareth?&rdquo;', body:'His first recorded words about Jesus are a put-down. He knew his Bible well enough to know the Messiah was not supposed to come from a backwater like that.'},
+ {ref:'John 1:47&ndash;48 &middot; the welcome', head:'&ldquo;I saw you under the fig tree&rdquo;', body:'Jesus speaks first, before Nathanael says a word to him: an Israelite indeed, in whom there is no deceit. Then he describes a private moment Nathanael thought nobody witnessed.'},
+ {ref:'John 1:49 &middot; the collapse', head:'&ldquo;You are the Son of God&rdquo;', body:'The prejudice did not get answered. It dissolved. Being personally, intimately seen melted the cynicism off in seconds.'}
+],
+links:['Then the welcome','Then worship'],
+prep:[
+ 'Nathanael is the right disciple for the middle of the series because he is the <b>honest skeptic in the room</b> &mdash; and almost certainly <em>someone</em> in the room is exactly that. He does not pretend interest he does not feel. His first recorded words about Jesus are a put-down. And yet within minutes he is worshiping.',
+ 'Tonight&rsquo;s job is to show the group <b>what turned him</b> &mdash; not a better argument, not more effort, but the discovery that Jesus already saw him, fully, before he came. That is the whole point: <em>we are known before we are willing.</em>',
+ '<b>The trap to avoid:</b> &ldquo;Be honest like Nathanael &mdash; just be more authentic, drop the act, try harder to be real.&rdquo; That flips the story backward. His transparency is lovely, but it is <b>not what saved him.</b> What changed him was being seen and welcomed by Jesus <em>before</em> he had cleaned himself up or come around. Keep the order straight: Jesus knows and welcomes us first; honesty is the response to grace, not the price of it.'
+],
+scenes:[
+ {tag:'John 1:46', head:'Says what he actually thinks', body:'<q>Can anything good come out of Nazareth?</q> No filter, no flattery. He is not performing belief he does not have.'},
+ {tag:'John 1:46', head:'Honest, not closed', body:'The same man who sneers also <em>goes</em> when Philip says come and see. His skepticism is the kind willing to be tested &mdash; a doubter still walking toward the evidence, not away from it.'},
+ {tag:'John 1:47', head:'A man Jesus calls guileless', body:'<q>An Israelite indeed, in whom there is no deceit!</q> No guile. What you see is what you get &mdash; no angle, no spin, no inner con.'},
+ {tag:'John 1:48', head:'Thoughtful, maybe prayerful', body:'&ldquo;Under the fig tree&rdquo; was a traditional image of a quiet place to study and pray. We cannot prove what he was doing there, but the picture is of a contemplative man alone with God before Jesus ever called his name.'}
+],
+leadernote:'Don&rsquo;t soften Nathanael&rsquo;s skepticism into a flaw he had to overcome. Jesus <em>praised</em> the very transparency that produced the blunt question. The honest doubter and the &ldquo;no deceit&rdquo; man are the same man. <b>Jesus wasn&rsquo;t put off by the eyebrow; he loved that there was nothing fake underneath it.</b>',
+versus:{
+ aK:'What did not change him', aQuote:'&ldquo;Can anything good come out of Nazareth?&rdquo;',
+ aBody:'Philip never out-argued the Nazareth objection. Nathanael did not reason his way past his own bias. Nothing in his theology had a slot for a Messiah from there.',
+ bK:'What did', bQuote:'&ldquo;Before Philip called you, when you were under the fig tree, I saw you.&rdquo;',
+ bBody:'He was simply <em>found out</em>, in the best possible way. Right perspective came not from getting his theology corrected but from <em>being personally known by Christ.</em>'
+},
+down:'The being-known came first. The believing came second.',
+after:'And then Jesus stretches him further, promising he will <b>see greater things than these &mdash; heaven opened, and the angels of God ascending and descending on the Son of Man</b> (John 1:50&ndash;51). An unmistakable echo of <b>Jacob&rsquo;s ladder</b> (Gen 28:12), with Jesus himself as the place where heaven and earth meet. Nathanael&rsquo;s first glimpse was only the doorway.',
+contribution:[
+ {dt:'The picture of guileless faith', dd:'Jesus&rsquo;s commendation makes him the New Testament&rsquo;s portrait of the transparent believer: no front, no spin, nothing managed. In a world of image and performance, the disciple who simply <em>is what he is</em> before God.'},
+ {dt:'One of the Twelve, start to finish', dd:'Named in every apostle list, among the seven at the Sea of Tiberias (John 21:2), and still in the upper room heading into Pentecost (Acts 1:13). He was there for the whole thing.'},
+ {dt:'A witness to the risen Christ', dd:'Specifically named when the risen Jesus appears at the Sea of Tiberias &mdash; an eyewitness of the resurrection, not just the ministry.'},
+ {dt:'Faithfulness, not fame', dd:'He wrote no epistle. We have one conversation and a fishing trip. You do not need a large platform or a recorded sermon to matter to the kingdom.'}
+],
+tradition:'Early tradition has Bartholomew carrying the gospel a long way from Galilee &mdash; to places such as <b>India and Armenia</b> &mdash; and dying a martyr&rsquo;s death, often described as being <b>flayed</b> in Armenia. <b>Tradition, not Scripture</b>, and the accounts vary in their details. Treat it as the church&rsquo;s memory, not biblical fact.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be honest like Nathanael, just be more authentic&rdquo; lesson. Watch the order: Nathanael did not get cleaned up, drop his guard, and <em>then</em> earn Jesus&rsquo;s notice. Jesus saw him under the fig tree &mdash; skepticism and all &mdash; <em>before Philip ever called him.</em> Jesus knew him before he knew Jesus, and welcomed him before he came. That is the gospel for every one of us. You do not make yourself honest enough, sincere enough, or doubt-free enough to qualify for Jesus. He already knows you &mdash; every private fig-tree moment, every cynical thought &mdash; and he comes for you anyway. Our transparency is not the <em>price</em> of being welcomed. It is what becomes possible once we realize we already are.',
+ foot:'<b>Indicative before imperative.</b> The worship (&ldquo;you are the Son of God,&rdquo; 1:49) and the call to follow flow <b>out of</b> being already seen and welcomed (1:47&ndash;48). We don&rsquo;t get known by becoming honest; we <em>become</em> honest because we are already fully known and fully loved. Trace the order out loud &mdash; the order is the gospel: <b>before</b> Philip called, <b>before</b> Nathanael decided to come and see, <b>before</b> he believed anything.'
+},
+questions:[
+ {lead:'Nathanael&rsquo;s first reaction to Jesus was skepticism.', rest:'Is honest skepticism a <em>barrier</em> to faith, or can it be a <em>doorway</em>? Where are you right now &mdash; and has doubt ever actually moved you closer to God rather than further away?'},
+ {lead:'Jesus praised Nathanael for having &ldquo;no deceit.&rdquo;', rest:'How honest are you really &mdash; with God, with the people closest to you, and with yourself? Where is the gap?'},
+ {lead:'What moved him was not a better argument &mdash; it was being fully known.', rest:'When have you felt truly <em>known</em> by God, not just believed-in by you, but seen by him? What did that do to you?'},
+ {lead:'He went from &ldquo;can anything good come?&rdquo; to &ldquo;you are the Son of God&rdquo; in minutes.', rest:'What do you think would actually move <em>you</em> from doubt to worship &mdash; and is it more information you are waiting on, or something else?', land:true},
+ {lead:'Where are you hiding behind a little guile &mdash; image management, a curated version of yourself?', rest:'Jesus is gently inviting you to drop it, because he already sees the real thing and welcomes you anyway.', land:true}
+],
+couples:'Marriage is one of the few places someone sees you with the guard fully down &mdash; under your own fig tree. Where do you still manage your image <em>with your spouse</em>? What would change if you let yourself be as known by them as Jesus already knows you?',
+dry:'<em>&ldquo;What is a can-anything-good-come-out-of-Nazareth moment you have had &mdash; a time you wrote something or someone off, fast, and were dead wrong?&rdquo;</em> It gets honest laughter and opens the door to the skeptic-to-worship turn.',
+takeaway:'&ldquo;Jesus knew you before you ever knew him &mdash; every hidden, fig-tree moment of your life &mdash; and he came for you anyway. <b>You don&rsquo;t get welcomed by becoming honest enough. You become honest because you are already fully known and fully loved.</b>&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he sees us completely &mdash; the skepticism, the spin, the private places we think no one watches &mdash; and welcomes us before we ever clean ourselves up or come around. Ask him to make the group people who, like Nathanael, stop managing their image and live transparently before the One who already knows it all.',
+readaloud:'<b>Read at 0:08:</b> John 1:45&ndash;51, the whole meeting start to finish. It is short and it carries the entire night &mdash; the prejudice, the welcome, the &ldquo;I saw you,&rdquo; and the confession all sit in seven verses. If time allows, add John 21:2 so the group hears he is still there at the very end, fishing with the others after the resurrection.',
+anchors:[
+ {ref:'John 1:45&ndash;51', note:'Philip brings him; no deceit; the fig tree; the confession; Jacob&rsquo;s ladder'},
+ {ref:'John 21:2', note:'Nathanael of Cana among the disciples after the resurrection'},
+ {ref:'Gen 28:12', note:'Jacob&rsquo;s ladder, the echo behind John 1:51'},
+ {ref:'Matt 10:3 &middot; Mark 3:18 &middot; Luke 6:14 &middot; Acts 1:13', note:'Bartholomew in the apostle lists'}
+],
+glance:[
+ {dt:'Names', dd:'Nathanael, the personal name, John only &middot; Bartholomew = <i>Bar-Tolmai</i>, son of Tolmai, in the Synoptics and Acts. <span class="note">Traditionally the same man; Scripture doesn&rsquo;t explicitly join them</span>'},
+ {dt:'Home', dd:'Cana of Galilee (John 21:2) &mdash; the village where Jesus turned water into wine. A man of the Scriptures (John 1:45).'},
+ {dt:'Brought by', dd:'Philip, the previous session &mdash; who is paired with Bartholomew in the apostle lists.'},
+ {dt:'Pairs with', dd:'Thomas, next session. The other great honest-doubter study &mdash; worth preparing them together.'}
+]
+});
+S.push({
+n:7, slug:'thomas', name:'Thomas', group:2,
+sub:'Called the Twin &middot; Didymus',
+hook:'The honest doubter who gave the highest confession &mdash; proof that Jesus condescends to honest doubt and <em>offers his own wounds.</em>',
+essence:'The honest doubter who gave the highest confession.',
+spine:[
+ {ref:'John 11:16 &middot; the courage', head:'&ldquo;Let us also go, that we may die with him&rdquo;', body:'Jesus turns back toward the region where they had just tried to stone him, and Thomas rallies the others. The bravest line any disciple speaks before the cross.'},
+ {ref:'John 20:25 &middot; the terms', head:'&ldquo;Unless I see&hellip; I will never believe&rdquo;', body:'He was not in the room. He refuses to borrow anyone else&rsquo;s certainty, and names exactly what he needs: the nail marks and the wounded side.'},
+ {ref:'John 20:27&ndash;28 &middot; the answer', head:'Jesus came back and offered his scars', body:'Eight days later, and the text suggests he came back largely for Thomas. Not a rebuke &mdash; an invitation. Then the highest confession in the Gospels.'}
+],
+links:['Then the doubt','Grace first'],
+prep:[
+ 'Thomas is the right disciple for a mixed-maturity room because almost everyone in the room is carrying a question they are afraid to say out loud &mdash; and Thomas says his out loud. He gets a bad nickname from history, but the man Scripture actually shows us is <b>honest, courageous, loyal, and unwilling to fake a faith he does not feel.</b>',
+ 'And here is the turn: when he finally meets the risen Christ, the doubter gives the single clearest confession of Jesus&rsquo;s deity in the Gospels &mdash; <em>My Lord and my God!</em> Tonight&rsquo;s job is to let the doubters in the room exhale, then watch what Jesus <em>does</em> with honest doubt. He comes back, and he offers his wounds.',
+ '<b>The trap to avoid:</b> &ldquo;Stop doubting and have more faith.&rdquo; That is the opposite of what Jesus does. Jesus never shames Thomas&rsquo;s honesty &mdash; he condescends to it, returns for him, and invites him to touch the scars. The lesson is not &ldquo;manufacture certainty.&rdquo; It is <b>bring your real doubt to the real Jesus, because he meets it.</b>'
+],
+scenes:[
+ {tag:'John 14:5', head:'Honest to a fault', body:'At the Last Supper eleven men nod along about &ldquo;the way.&rdquo; Thomas raises his hand: <q>Lord, we do not know where you are going. How can we know the way?</q> He will not pretend to understand what he does not.'},
+ {tag:'John 11:16', head:'Courageous and loyal', body:'<q>Let us also go, that we may die with him.</q> Not optimism &mdash; grim, all-in loyalty. Whatever else Thomas is, he is not a coward.'},
+ {tag:'John 20:25', head:'A realist, prone to melancholy', body:'He braces for the worst. When Jesus heads toward danger, Thomas assumes death. When the others report a resurrection, he assumes they are wrong. His default setting is sober, not sunny.'},
+ {tag:'John 20:25', head:'Won&rsquo;t profess what he doesn&rsquo;t have', body:'This is the heart of him. He refuses to mouth a confession his heart has not reached &mdash; and that refusal is a kind of integrity.'}
+],
+leadernote:'Resist letting the room reduce Thomas to &ldquo;the weak one.&rdquo; Plenty of people in church history have been less honest and more lost. Thomas&rsquo;s problem was never dishonesty &mdash; it was that he was looking for the risen Christ in the right place but <em>on his own terms</em>, and Jesus graciously met him there.',
+versus:{
+ aK:'What he would not accept', aQuote:'&ldquo;We have seen the Lord.&rdquo;',
+ aBody:'The disciples come to him glowing. For Thomas that is not enough. He wasn&rsquo;t in the room; he didn&rsquo;t see. <em>He refuses to live on someone else&rsquo;s experience of God.</em>',
+ bK:'What he demanded to see', bQuote:'&ldquo;The mark of the nails&hellip; and place my hand into his side.&rdquo;',
+ bBody:'Notice <em>what</em> he wants to see: not just any Jesus, but the <b>crucified</b> Jesus, scars and all. Even Thomas&rsquo;s doubt is pointed at the right thing.'
+},
+down:'His honest doubt was a doorway, not a dead end.',
+after:'The moment he meets the risen Christ he does not analyze or hesitate. He <b>worships</b>: &ldquo;My Lord and my God!&rdquo; <em>The man who demanded the most evidence offers the most extravagant confession.</em> So the gap in Thomas is not a cold, modern skepticism. It is the very human refusal to live on secondhand faith. That can look like stubbornness &mdash; and it is fair to ask the room where the line is &mdash; but in Thomas&rsquo;s case it drove him <b>toward</b> Christ, not away.',
+contribution:[
+ {dt:'The highest confession in the Gospels', dd:'&ldquo;My Lord and my God!&rdquo; (John 20:28) is the clearest, most complete statement of Jesus&rsquo;s deity any human being makes in the four Gospels. The doubter gets there first and most fully &mdash; and Jesus <em>receives</em> the worship rather than correcting it.'},
+ {dt:'A blessing aimed straight at us', dd:'&ldquo;Blessed are those who have not seen and yet have believed&rdquo; (John 20:29) &mdash; the last beatitude in John, and it is for every believer since. Thomas&rsquo;s story is the bridge between the eyewitnesses and us.'},
+ {dt:'The question that drew out a treasure', dd:'His &ldquo;how can we know the way?&rdquo; is what prompts &ldquo;I am the way, and the truth, and the life&rdquo; (John 14:6). The church has Thomas&rsquo;s honest question to thank for one of Jesus&rsquo;s clearest self-revelations.'},
+ {dt:'Three scenes, all in John', dd:'11:16 loyalty &middot; 14:5 the question &middot; 20:24&ndash;29 doubt into confession. He appears in all four apostle lists but only speaks in John.'}
+],
+tradition:'Thomas carried the gospel farther east than any other apostle &mdash; to <b>India</b>. The Mar Thoma / St. Thomas Christians of India trace their origin to him, and tradition says he was martyred near <b>Chennai (Mylapore)</b>. <b>Tradition, not Scripture.</b> Also unknown: <em>whose</em> twin he was. Scripture gives him the name and never the sibling &mdash; and no hometown, trade, or family either.',
+guardrail:{
+ speech:'Hear me carefully: this is <em>not</em> a &ldquo;stop doubting and have more faith&rdquo; lesson. Look at what Jesus actually does. He does not shame Thomas. He does not say &ldquo;you should have believed the others.&rdquo; He <em>comes back for him</em>, and he <em>offers his own scars.</em> Jesus condescends to honest doubt. He would rather have a Thomas who wrestles his way to worship than a follower who only pretends to believe. So if you are carrying a real question tonight, the answer is not &ldquo;try to feel more certain.&rdquo; The answer is: bring it to the real Jesus, because that is exactly the kind of person he shows up for.',
+ foot:'<b>Grace before command.</b> Notice the order. Jesus offers his wounds <em>first</em> &mdash; the grace, the evidence, the condescension &mdash; and only then says &ldquo;believe&rdquo; (John 20:27). Thomas doesn&rsquo;t claw his way to faith; the risen Christ comes and gives it to him. We don&rsquo;t manufacture belief to earn an encounter with Jesus; we believe <b>because he came looking.</b> He could have left Thomas to figure it out, or written him off as the weak link. He came back instead.'
+},
+questions:[
+ {lead:'Thomas refused to pretend to believe.', rest:'Is that honesty or stubbornness? Where in your own life do you fake a certainty you do not actually feel?'},
+ {lead:'Jesus didn&rsquo;t scold Thomas &mdash; he offered his wounds (John 20:27).', rest:'How does that change the way you would bring your doubts and questions to God?'},
+ {lead:'The doubter gave the highest confession.', rest:'Have your hardest questions ever ended up leading you to a <em>deeper</em> faith, not a weaker one?'},
+ {lead:'Jesus blessed those who believe without seeing (John 20:29).', rest:'What is he asking you to trust him with right now without the proof you would prefer to have first?', land:true},
+ {lead:'Thomas was also the one ready to die with Jesus (John 11:16).', rest:'How do courage and doubt live in the same person &mdash; and where do you see both of them in yourself?', land:true}
+],
+couples:'Is there a doubt or a fear you have kept from your spouse because you thought you were supposed to look more certain than you feel? What would it look like to be Thomas-honest with each other &mdash; and to offer each other Jesus&rsquo;s kind of patience instead of a lecture?',
+dry:'<em>&ldquo;When is the last time you had a real doubt about God &mdash; and did you feel like you were allowed to say it out loud here?&rdquo;</em> It gives the room permission to be honest, which is the whole point tonight.',
+takeaway:'&ldquo;Jesus meets honest doubt with <b>open wounds, not a lecture.</b> Bring him your real questions &mdash; he comes back for the ones who won&rsquo;t fake it.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he condescends to our doubt &mdash; that he came back for Thomas, offered his scars, and receives the worship of people who arrive at faith the hard way. Ask him to make the group honest before God, unafraid of their questions, and able to say with Thomas, &ldquo;My Lord and my God!&rdquo;',
+readaloud:'<b>Read at 0:08:</b> John 11:16 first &mdash; just the one verse, the courage &mdash; then John 20:24&ndash;29, the doubt and the confession. Reading the courage <em>before</em> the doubt reframes the whole night: the same man willing to die with Jesus is the man who later says &ldquo;unless I see, I will never believe.&rdquo; Doubt and courage in one person.',
+anchors:[
+ {ref:'John 11:16', note:'ready to die with him'},
+ {ref:'John 14:5', note:'the question that gets &ldquo;I am the way&rdquo;'},
+ {ref:'John 20:24&ndash;29', note:'absent, then the terms, then &ldquo;My Lord and my God!&rdquo;'},
+ {ref:'John 21:2', note:'still with them after the resurrection'},
+ {ref:'Matt 10:3 &middot; Mark 3:18 &middot; Luke 6:15 &middot; Acts 1:13', note:'in every apostle list'}
+],
+glance:[
+ {dt:'Names', dd:'Thomas, Aramaic for twin &middot; Didymus, the Greek for twin (John 11:16). <span class="note">&ldquo;Doubting Thomas&rdquo; is a later nickname, not Scripture&rsquo;s name for him</span>'},
+ {dt:'Background', dd:'Hometown, trade and family all unrecorded. <span class="note">Whose twin he was is unknown</span>'},
+ {dt:'His confession', dd:'&ldquo;My Lord and my God!&rdquo; &mdash; the clearest statement of Jesus&rsquo;s deity in the Gospels.'},
+ {dt:'Pairs with', dd:'Bartholomew / Nathanael, the previous session. The open-hearted man with no guile beside the honest skeptic.'}
+]
+});
+S.push({
+n:8, slug:'matthew', name:'Matthew', group:2,
+sub:'Also called Levi, son of Alphaeus &middot; the tax collector',
+hook:'The tax collector grace reached <em>at his booth</em> &mdash; called while he was still disqualified.',
+essence:'The tax collector grace reached at his booth.',
+spine:[
+ {ref:'Matt 9:9 &middot; the booth', head:'Two words at his post', body:'Jesus walks up to a working tax collector &mdash; mid-sin, mid-career, at the booth &mdash; and says &ldquo;Follow me.&rdquo; No resistance, no negotiation. He rose and followed him.'},
+ {ref:'Luke 5:29 &middot; the feast', head:'His first move was a party', body:'&ldquo;Levi made him a great feast in his house,&rdquo; with a large company of tax collectors and others at the table. His instinct was to gather every outcast he knew and put them in a room with Jesus.'},
+ {ref:'Matt 9:12&ndash;13 &middot; the answer', head:'&ldquo;I came not to call the righteous&rdquo;', body:'The religious crowd grumbles about the company. Jesus answers with a diagnosis and a mission statement: the sick need a physician, and he came for sinners.'}
+],
+links:['Then the table','Then the mission'],
+prep:[
+ 'Matthew is the clearest single picture of grace reaching the <em>disqualified</em>. Everyone else Jesus called had something &mdash; fishermen had an honest trade, a zealot had a cause. Matthew had a booth, a profit, and a town that hated him for both. He was a Jew working Rome&rsquo;s tax system for Herod Antipas, regarded by his own people as a traitor and a cheat.',
+ '<b>And Jesus walked straight up to the very person his town had written off and said two words: Follow me.</b> Tonight&rsquo;s job is to let the group feel how scandalous that call was, then turn their eyes from Matthew&rsquo;s past to the Christ who came specifically <em>for</em> people like him.',
+ '<b>The trap to avoid:</b> &ldquo;Be willing to drop everything like Matthew.&rdquo; That turns the night into a willpower test &mdash; try harder, respond faster. But Matthew&rsquo;s instant obedience is the <em>result</em> of grace finding him, not the price of it. Keep returning to Jesus&rsquo;s own line: <b>I came not to call the righteous, but sinners</b> (Matt 9:13).'
+],
+scenes:[
+ {tag:'Matt 9:9', head:'Responsive', body:'No recorded hesitation. <q>He rose and followed him.</q> A lucrative, secure post abandoned on the spot. When grace called, he moved.'},
+ {tag:'Luke 5:29', head:'Generous and hospitable', body:'His first act as a follower was to spend his house and his table on a feast for outsiders. Whatever he had, he opened it up.'},
+ {tag:'Matt 10:3', head:'Self-effacing &mdash; and this is the tell', body:'In his own Gospel&rsquo;s list of the Twelve, Matthew is the <em>only</em> one who tags himself with his old job: <q>Matthew the tax collector.</q> Mark and Luke drop the label. He kept the scarlet word on himself.'},
+ {tag:'Mark 2:14 &middot; Luke 5:27', head:'Two names, one man', body:'Mark and Luke call him <q>Levi the son of Alphaeus.</q> His own Gospel calls him Matthew. Same man, same booth at Capernaum.'}
+],
+leadernote:'Don&rsquo;t sand Matthew&rsquo;s past off to make him &ldquo;respectable.&rdquo; His whole witness depends on the gap between who he was and who Jesus called him to be. The tax-collector label isn&rsquo;t a stain to apologize for &mdash; <em>it is the headline of his testimony.</em> Let the group sit with how unlikely this call was; that is the point, not a problem to smooth over.',
+versus:{
+ aK:'The Pharisees&rsquo; two categories', aQuote:'&ldquo;Why does your teacher eat with tax collectors and sinners?&rdquo;',
+ aBody:'They were not wrong about the company. They saw clean and unclean and built their identity on being in the right one. <em>They thought they were well &mdash; which is precisely why they missed the physician standing in front of them.</em>',
+ bK:'What Matthew knew about himself', bQuote:'&ldquo;Those who are well have no need of a physician, but those who are sick.&rdquo;',
+ bBody:'Matthew really <em>was</em> a sinner, and he had no illusions about being one of the righteous. His town had stripped that from him years before. <em>He knew he was sick.</em>'
+},
+down:'He knew which group he was in. That knowledge is what made room for Jesus.',
+after:'This is grace understood <b>from the bottom up.</b> Matthew never had to be talked out of self-righteousness, because he never had any to begin with. So when Jesus said &ldquo;I came not to call the righteous, but sinners,&rdquo; Matthew heard it as the best news a disqualified man could possibly receive: <em>that is me &mdash; and he came for me.</em>',
+contribution:[
+ {dt:'The first Gospel', dd:'The most <b>Jewish</b> of the four, built around Old Testament fulfillment. The book that argues most carefully that Jesus is Israel&rsquo;s promised Messiah was written by the very kind of man devout Israel despised.'},
+ {dt:'A bridge to the table', dd:'His instinct from day one &mdash; the feast for tax collectors and sinners &mdash; became a picture of his whole life: a man who used his place at Jesus&rsquo;s table to bring the outsiders in.'},
+ {dt:'A record-keeper&rsquo;s gift redeemed', dd:'A tax collector lived by careful records, lists and numbers. Fitting that his Gospel is the most carefully organized &mdash; five great teaching blocks, genealogies, fulfillment citations. The skill his old job gave him got redeemed into service of the King.'},
+ {dt:'One of the Twelve', dd:'Named in the apostle lists (Matt 10:3), and there through Pentecost.'}
+],
+tradition:'The <b>authorship of the Gospel of Matthew</b> is early and consistent <b>church attribution, not stated in Scripture</b> &mdash; the text itself is anonymous. Say that plainly and then teach it as the church has received it. His later ministry in <b>Ethiopia or Persia</b> and his martyrdom are also <b>tradition, not Scripture</b>, and the accounts vary. Scripture records neither.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be ready to drop everything like Matthew&rdquo; lesson. Matthew did not earn this call by being eager &mdash; he was <em>sitting at the booth</em>, doing the very thing that disqualified him, when grace walked up. Look at the order: Jesus calls him <em>first</em>, while he is still a tax collector. The response &mdash; getting up, throwing the feast &mdash; comes <em>after</em> the call, <em>because</em> of the call. That is the whole gospel right there. Jesus says, <em>I came not to call the righteous, but sinners.</em> Grace does not wait at the finish line for you to qualify. It seeks the disqualified right at their post. The r&eacute;sum&eacute; of failure is the hiring criteria. He came for exactly the kind of person who is sure they are too far gone &mdash; and he comes for you the same way.',
+ foot:'<b>Indicative before imperative.</b> The command (&ldquo;Follow me&rdquo;) is <em>itself</em> an act of grace toward a sinner, and everything Matthew did afterward flowed <b>out of</b> being sought, not in order to be worthy of it. We don&rsquo;t get called because we qualify; we follow <b>because we were called while we couldn&rsquo;t.</b> And remember why his town despised him: the system ran on overcharging, so he was seen as both a traitor to his people and a cheat against his neighbors. That is the man Jesus picked.'
+},
+questions:[
+ {lead:'Matthew was the last person his town expected Jesus to call.', rest:'Who do you secretly think is too far gone for grace &mdash; a person, or a category of person?'},
+ {lead:'He left a lucrative, secure job instantly (Matt 9:9).', rest:'What would Jesus&rsquo;s &ldquo;follow me&rdquo; cost you to obey <em>today</em> &mdash; and is the cost what is holding you back?'},
+ {lead:'Matthew&rsquo;s first instinct was a party for his old crowd (Luke 5:29).', rest:'Does your faith open doors to your pre-Jesus friends, or has it quietly closed them?'},
+ {lead:'The religious crowd grumbled that Jesus ate with sinners (Matt 9:11).', rest:'Are you ever more comfortable <em>judging</em> the Matthews than <em>sitting with</em> them? Where?', land:true},
+ {lead:'A tax collector became a Gospel writer.', rest:'What part of your past do you assume disqualifies you &mdash; that God might actually be planning to <em>use</em>?', land:true}
+],
+couples:'Is there a part of your spouse&rsquo;s past, or your own, that you have quietly filed under disqualified &mdash; a category you have stopped expecting God to redeem? What would it look like to treat that the way Jesus treated Matthew&rsquo;s booth: as the exact place grace shows up?',
+dry:'<em>&ldquo;Who is the Matthew in your life &mdash; the person you would be honestly surprised to see God reach?&rdquo;</em> It surfaces the same blind spot the Pharisees had, without anyone having to admit it about themselves first.',
+takeaway:'&ldquo;Grace doesn&rsquo;t wait for you to qualify &mdash; <b>it seeks the disqualified right at their post.</b> The very thing you think rules you out is often what Jesus came to redeem.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he came not to call the righteous but sinners &mdash; that he walks straight up to the people the world has written off and says &ldquo;Follow me&rdquo; before they have cleaned anything up. Ask him to free the group from the lie that any past puts a person out of his reach, and to make them, like Matthew, people who pull up a chair for the outsiders.',
+readaloud:'<b>Read at 0:08:</b> Matthew 9:9&ndash;13. This single passage holds the whole story &mdash; the call at the booth, the dinner with tax collectors and sinners, the religious grumbling, and Jesus&rsquo;s answer. If time allows, also read Luke 5:27&ndash;32 so the group hears that Matthew&rsquo;s first move was to throw <em>a great feast in his house</em> &mdash; the detail that tells you everything about the man.',
+anchors:[
+ {ref:'Matt 9:9&ndash;13', note:'the call at the tax booth and the dinner'},
+ {ref:'Mark 2:13&ndash;17', note:'parallel; names him Levi the son of Alphaeus'},
+ {ref:'Luke 5:27&ndash;32', note:'parallel; the great feast in his house'},
+ {ref:'Matt 10:3', note:'the label he kept on himself'}
+],
+glance:[
+ {dt:'Names', dd:'Matthew, in his own Gospel &middot; Levi, son of Alphaeus (Mark 2:14; Luke 5:27). Same man.'},
+ {dt:'Post &amp; trade', dd:'Tax booth at Capernaum, on the trade road by the Sea of Galilee. Collecting for Rome under Herod Antipas.'},
+ {dt:'First act as a follower', dd:'A great feast for tax collectors and sinners (Luke 5:29).'},
+ {dt:'Wrote', dd:'The Gospel of Matthew, most Jewish of the four. <span class="note">Authorship is church tradition; the text is anonymous</span>'}
+]
+});
+S.push({
+n:9, slug:'james-alphaeus', name:'James, son of Alphaeus', group:3,
+sub:'The disciple we know least &middot; no recorded words, no recorded deeds',
+hook:'Faithful in obscurity. Scripture records his name and nothing else &mdash; and <em>that silence turns out to be a sermon.</em>',
+essence:'Faithful in obscurity. The disciple we know least.',
+warn:'<b>The most common mix-up, and you should head it off out loud.</b> This is <b>not</b> James the brother of Jesus &mdash; the leader of the Jerusalem church and author of the epistle of James (Acts 15; Gal 1:19; James 1:1). That James was <em>not</em> one of the Twelve. When someone asks &ldquo;didn&rsquo;t James write a whole book of the Bible?&rdquo; the answer is: that is the other James. <b>Don&rsquo;t let the room hand our obscure apostle a r&eacute;sum&eacute; that isn&rsquo;t his. The silence is the point.</b>',
+spine:[
+ {ref:'Luke 6:12&ndash;13 &middot; chosen', head:'Prayed over all night, called by name', body:'Jesus went to the mountain and continued all night in prayer, and when day came he chose twelve. James son of Alphaeus was not an accident or a filler. He was prayed over, the same as Peter.'},
+ {ref:'Acts 1:13&ndash;14 &middot; still there', head:'Present and praying', body:'The last place Scripture puts him: the upper room, with one accord, devoting themselves to prayer. Of the original Twelve, one fell away. James did not.'},
+ {ref:'Rev 21:14 &middot; remembered', head:'His name is in the eternal city', body:'The wall of the new Jerusalem has twelve foundations, and on them the names of the twelve apostles of the Lamb. Barely written in the Gospels. Carved into the city that lasts.'}
+],
+links:['Then he stayed','Then forever'],
+prep:[
+ 'This is the hardest session in the series to teach &mdash; and that is exactly why it might be the most important one for the group. Eight nights running there have been stories: a man who walked on water, a doubter offered the wounds, a tax collector who left his booth. <b>Tonight there is no story.</b> Scripture gives us his name on four lists and nothing more. No quotation, no scene, no miracle, no death.',
+ '<b>Resist the temptation to fill the silence.</b> The whole power of this night is letting the group sit in how <em>little</em> we are told &mdash; and then realizing that Jesus chose this man, named him among the Twelve, and counted his hidden faithfulness as no less real than Peter&rsquo;s loud one. The theme is not biography. There is none. The theme is the dignity and sufficiency of <b>being known to God</b> when no one else is watching.',
+ '<b>The trap to avoid:</b> turning this into &ldquo;be faithful like James by trying harder in the background.&rdquo; That misses it twice. First, we know nothing about James&rsquo;s faithfulness to imitate &mdash; Scripture does not show it; we only know Jesus <em>chose</em> him. Second, the grace runs the other direction: the point is not that James earned a place by quiet effort, but that <b>Jesus chooses, treasures, and sends people history never notices.</b>'
+],
+scenes:[
+ {tag:'Mark 15:40 &mdash; uncertain', head:'&ldquo;James the younger&rdquo;', body:'The Greek <i>mikros</i> means small or little &mdash; possibly younger, possibly shorter, possibly lesser in prominence. If this is our James, even his nickname marks him as the overlooked one. <em>An inference from the name, not something Scripture states.</em>'},
+ {tag:'Matt 10:3', head:'A common name, a quiet line', body:'James is ordinary &mdash; Hebrew <i>Jacob</i>, one of the most common Jewish names of the era. His father&rsquo;s name only serves to keep him from being confused with someone more famous. Everything about how Scripture handles him says: <em>this one is not the headline.</em>'},
+ {tag:'Acts 1:13&ndash;14', head:'Present and praying', body:'The one place we see him doing anything, he is doing the most ordinary, least visible thing a believer does &mdash; gathered with the others, praying, waiting on the Spirit. No spotlight. Just there. <em>Still there.</em>'},
+ {tag:'Mark 2:14 &mdash; uncertain', head:'Brother of Matthew?', body:'Matthew / Levi is also called son of Alphaeus, so some speculate the two were brothers. <em>The Gospels never say so, and Alphaeus may simply have been a common name. Do not teach it as fact.</em>'}
+],
+leadernote:'Don&rsquo;t apologize for the thinness here, and don&rsquo;t pad it with legends. Name it out loud: &ldquo;We&rsquo;re not going to make up a personality for him. The Bible didn&rsquo;t give us one. <em>And tonight that absence is going to do more for us than a highlight reel would.</em>&rdquo;',
+versus:{
+ aK:'How we measure significance', aQuote:'What got recorded.',
+ aBody:'Visibility, story, platform. Eight sessions of high-resolution portraits have trained the room to expect a highlight reel &mdash; and this week there isn&rsquo;t one. His trade, hometown, call, words, deeds and death are all simply blank.',
+ bK:'How Jesus measures it', bQuote:'&ldquo;The Lord knows those who are his.&rdquo;',
+ bBody:'God <em>chose what is low and despised in the world, so that no human being might boast</em> (1 Cor 1:28&ndash;29) &mdash; the same God who calls into existence the things that do not exist (Rom 4:17). <em>The pattern all through Scripture is to treasure the unseen one.</em>'
+},
+down:'Being unrecorded is not the same as being unimportant.',
+after:'Put the question to the group as theology, not biography: <b>what does it mean to be chosen by Jesus and never noticed by anyone else?</b> James had no platform and is no less an apostle for it. Ephesians says the church is built on the foundation of the apostles, Christ Jesus himself the cornerstone (Eph 2:20). <b>He is one of those foundation stones whether or not we can read his story.</b>',
+contribution:[
+ {dt:'He was one of the Twelve', dd:'Not small. The Twelve are the appointed, eyewitness foundation of the church &mdash; with Jesus, sent by Jesus, entrusted with the gospel.'},
+ {dt:'He stayed', dd:'Of the original Twelve, one fell away. James did not. After the cross, after the resurrection, after the ascension, he was still there praying with the church. <em>Quiet endurance is itself a contribution.</em>'},
+ {dt:'His name is on the foundations', dd:'Rev 21:14. Whatever he did with his obscure life, Christ counted it worthy of an eternal memorial.'},
+ {dt:'He was sent', dd:'&ldquo;He appointed twelve&hellip; so that they might be with him and he might send them out&rdquo; (Mark 3:14). The commission was his too.'}
+],
+tradition:'Because Scripture says so little, later church tradition tried to fill the gap with accounts of his ministry and martyrdom. <b>These are tradition, not Scripture &mdash; and the traditions disagree with one another and frequently confuse him with the other Jameses.</b> Don&rsquo;t anchor anything in them. If someone has heard a specific &ldquo;James was martyred by&hellip;&rdquo; story, receive it gently and label it. The most honest thing we can say: <em>the church remembered he existed and was faithful, and trusted his reward to God.</em>',
+guardrail:{
+ speech:'Hear me carefully. Tonight is <em>not</em> &ldquo;be quietly faithful like James and maybe God will notice you.&rdquo; We don&rsquo;t even know James&rsquo;s faithfulness to copy &mdash; Scripture didn&rsquo;t show us. What we know is that <em>Jesus chose him, named him, sent him, and treasured him</em> &mdash; and Jesus did it for a man the world would never write a single line about. Jesus does not grade on platform or fame. The unnamed apostle is no less chosen, no less loved, no less commissioned than Peter. So the question for you tonight is not &ldquo;am I doing enough hidden good to earn God&rsquo;s attention?&rdquo; The gospel is the other way around: <em>you are already seen, already chosen, already loved by the One whose attention is the only one that finally matters.</em> Faithfulness witnessed only by God is not second-class. It is enough &mdash; because being known to God is enough.',
+ foot:'<b>Indicative before imperative.</b> We don&rsquo;t become significant by going unnoticed for Jesus; we are <em>already</em> significant because Jesus chose us &mdash; and out of that settled, seen-by-God identity we are freed to live faithfully whether anyone ever notices or not. Four things stay true of him with the page nearly blank: he was <b>chosen</b> (Luke 6:12&ndash;13), <b>named</b> (Rev 21:14), <b>sent</b> (Mark 3:14), and <b>kept</b> (Acts 1:14).'
+},
+questions:[
+ {lead:'We know nothing about James but his name &mdash; yet Jesus chose him as one of the Twelve.', rest:'What does that say to anyone who feels unseen?'},
+ {lead:'Most faithful Christians never get their story told.', rest:'Are you okay being known to God but unknown to history?'},
+ {lead:'James was still in the upper room praying after the ascension (Acts 1:13).', rest:'What does quiet, unrewarded faithfulness look like for you?'},
+ {lead:'Our culture rewards visibility.', rest:'Where are you tempted to <em>perform</em> your faith rather than simply live it?', land:true},
+ {lead:'If your discipleship were never noticed by anyone but God, would that be enough for you?', rest:'Be honest.', land:true}
+],
+couples:'So much of a marriage is faithfulness no one else ever sees &mdash; the unglamorous, unwitnessed serving you do for each other day after day. Where has your spouse been quietly faithful in a way the world would never notice but God surely does? Tell them. And where do you need to stop keeping score on who gets credit?',
+dry:'<em>&ldquo;Who is the most faithful person you have ever known that the world will never hear about?&rdquo;</em> It gets specific, tender answers fast, and lands the whole night on real people instead of abstraction.',
+takeaway:'&ldquo;You don&rsquo;t need a platform to be chosen. The disciple we know least is still one of the twelve foundation stones of the church &mdash; because Jesus chooses, treasures, and sends people the world never notices. <b>Known to God is enough.</b>&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he sees the hidden ones &mdash; that he chose, named, sent, and kept a man whose whole story is a single line, and that he does the same for everyone in the room. Ask him to free the group from the tyranny of being seen, and to settle them in the sufficiency of being known to God.',
+readaloud:'<b>Read at 0:08 &mdash; read all four, so the group</b> hears <b>how little there is:</b> Matthew 10:2&ndash;4, Mark 3:16&ndash;19, Luke 6:13&ndash;16, then Acts 1:12&ndash;14. Reading them back to back <em>is</em> the teaching. Let the room notice: in three his name is one item in a list; in the fourth he is simply present and praying with the others. That is the entire biblical record.',
+anchors:[
+ {ref:'Matt 10:3 &middot; Mark 3:18 &middot; Luke 6:15', note:'the call lists &mdash; every place he is named'},
+ {ref:'Acts 1:13&ndash;14', note:'in the upper room, devoted to prayer'},
+ {ref:'Luke 6:12&ndash;13', note:'Jesus prayed all night before choosing the Twelve'},
+ {ref:'Mark 3:14', note:'appointed to be with him and to be sent out'},
+ {ref:'Rev 21:14', note:'the twelve names on the foundations of the city'},
+ {ref:'1 Cor 1:28&ndash;29 &middot; 2 Tim 2:19', note:'God chooses the low; the Lord knows those who are his'}
+],
+glance:[
+ {dt:'Name', dd:'James, Hebrew <i>Jacob</i> &middot; &ldquo;son of Alphaeus,&rdquo; the patronymic that distinguishes him from James son of Zebedee.'},
+ {dt:'Every biblical mention', dd:'Matt 10:3, Mark 3:18, Luke 6:15, Acts 1:13. Name only. <span class="note">No words, no deeds recorded anywhere</span>'},
+ {dt:'Uncertain identifications', dd:'Possibly &ldquo;James the younger&rdquo; of Mark 15:40; possibly brother of Matthew/Levi. <span class="note">Both inferences, never stated</span>'},
+ {dt:'Clock note', dd:'Teaching runs short tonight by necessity. You may reach the turn early &mdash; <b>don&rsquo;t fill it with legends.</b> Give the extra minutes to discussion.'}
+]
+});
+S.push({
+n:10, slug:'thaddaeus', name:'Thaddaeus / Jude', group:3,
+sub:'Judas the son of James &middot; &ldquo;Judas, not Iscariot&rdquo;',
+hook:'The one who asked the quiet question &mdash; and Jesus answered it not with a debate, but with <em>a promise to come and make his home in him.</em>',
+essence:'The one who asked the quiet question.',
+warn:'<b>The name situation, so you can explain it rather than trip over it.</b> He is <b>Thaddaeus</b> in Matthew and Mark, and <b>Judas the son of James</b> in Luke and Acts. Some manuscripts of Matthew add <b>Lebbaeus</b>. The church has long understood these to be the same man under different names, common enough in a world where people carried more than one. The exact relationship of the names is debated by scholars; what matters is that the same slot in all four lists is filled by this one quiet disciple.',
+spine:[
+ {ref:'John 14:21 &middot; what he heard', head:'Jesus promised to &ldquo;manifest&rdquo; himself', body:'Whoever keeps my commandments loves me, and I will love him and manifest myself to him. Thaddaeus was clearly listening, and he caught the surprising implication.'},
+ {ref:'John 14:22 &middot; his one line', head:'&ldquo;Why us, and not the world?&rdquo;', body:'His entire recorded speech in all of Scripture: one sincere, thoughtful question. No edge, no test. He was honest enough to name the tension instead of pretending it was not there.'},
+ {ref:'John 14:23 &middot; the answer', head:'&ldquo;We will make our home with him&rdquo;', body:'Not a fact about how the kingdom works. A promise of presence. The Father and the Son moving in. We have that sentence on record because Thaddaeus asked.'}
+],
+links:['So he asked','And Jesus moved in'],
+prep:[
+ 'This disciple is barely a name in the Gospel lists, and that is most of the point tonight. He shows up in all four rosters of the Twelve, under two different names, and has <b>exactly one recorded sentence</b> in all of Scripture &mdash; a sincere, honest question. What makes the session land is <em>what his question drew out of Jesus</em>: one of the richest promises in the whole Gospel of John.',
+ 'The right frame for a mixed-maturity room: most people carry a real question about Jesus they have never said out loud, sometimes for years, often because they assume a question is a sign of weak faith. Thaddaeus voiced his, and <b>Jesus didn&rsquo;t scold him. He answered with himself.</b> That is the gift tonight &mdash; permission to ask, and the discovery of what the answer is.',
+ '<b>The trap to avoid:</b> &ldquo;Ask better questions like Thaddaeus.&rdquo; The lesson is <em>not</em> a technique for asking the right thing the right way &mdash; that just turns a quiet, faithful man into a self-improvement mascot. <b>The point is the answer, not the question.</b> Keep returning there: Jesus answers the honest question with his own indwelling presence.'
+],
+scenes:[
+ {tag:'John 14:22', head:'Inquisitive', body:'His one recorded act is to <em>ask</em>. Not to argue, not to correct Jesus, not to volunteer for something. To ask an honest question about what Jesus had just said.'},
+ {tag:'John 14:22', head:'Sincere', body:'There is no edge in his question and no test in it. It reads as a genuine attempt to understand &mdash; the kind of person who would rather ask than quietly assume he had figured it out.'},
+ {tag:'John 14:21&ndash;22', head:'Attentive', body:'He had clearly been listening. Jesus had just said he would manifest himself to those who love and keep his word, and Thaddaeus caught the implication and wanted it spelled out.'},
+ {tag:'John 14:22', head:'Easy to overlook', body:'The kind of disciple who never makes the highlight reel &mdash; no walking on water, no bold confession, no rebuke. <em>Just present, listening, and willing to ask.</em>'}
+],
+leadernote:'Don&rsquo;t apologize for how little we know about him, and don&rsquo;t pad the gap with guesses. <b>The smallness is the gift tonight</b> &mdash; most people in the room feel like the obscure disciple, not the famous one. A man with one line who drew out one of Jesus&rsquo;s greatest promises is exactly the encouragement an ordinary group needs.',
+versus:{
+ aK:'What he assumed a Messiah would do', aQuote:'&ldquo;How is it that you will manifest yourself to us, and not to the world?&rdquo;',
+ aBody:'Behind the question is an assumption a lot of the disciples shared: that the Messiah&rsquo;s arrival would be <b>public, political, and unmissable</b> &mdash; a conquering display the whole world would be forced to acknowledge.',
+ bK:'What Jesus said instead', bQuote:'&ldquo;We will come to him and make our home with him.&rdquo;',
+ bBody:'Not spectacle the whole world can see. <em>He reveals himself by moving in</em> &mdash; the Father and the Son making their home in the one who loves and keeps his word.'
+},
+down:'The question was &ldquo;how will you reveal yourself?&rdquo; The answer was &ldquo;by coming to live with you.&rdquo;',
+after:'And sit with one more thing for a second. This man <b>shared a name with the most infamous traitor in history</b>, and is mostly remembered by nicknames to keep the two apart. John makes the distinction explicit at the very moment he speaks &mdash; he calls him <em>&ldquo;Judas (not Iscariot)&rdquo;</em> (John 14:22). His name had to be qualified so nobody would confuse the faithful Judas with the betrayer.',
+contribution:[
+ {dt:'He drew out the indwelling promise', dd:'John 14:23 is one of the richest verses in the New Testament &mdash; the Father and the Son making their <em>home</em> with the believer. We have that sentence on record because <b>Thaddaeus asked.</b>'},
+ {dt:'Faithfulness without a platform', dd:'He is chosen, present for three years, and listed among the Twelve forever &mdash; and he never needed to be famous to be faithful. Most disciples of Jesus serve exactly here.'},
+ {dt:'One sentence, well spent', dd:'Of all the words he could have had recorded, the one we got was an honest question brought to the right Person.'},
+ {dt:'Named in all four lists', dd:'Matt 10:3, Mark 3:18, Luke 6:16, Acts 1:13 &mdash; there from the choosing through the upper room.'}
+],
+tradition:'Later ministry in regions such as <b>Mesopotamia, Persia, or Armenia</b>, ending in <b>martyrdom</b> &mdash; held by various traditions, with the accounts differing. <b>Tradition, not Scripture.</b> He is sometimes connected with the <b>epistle of Jude</b>, but that authorship is <b>uncertain and debated</b> and we do not assert it: the letter&rsquo;s own author calls himself &ldquo;a brother of James&rdquo; (Jude 1:1), and whether that is this Judas is not settled. Flag it, don&rsquo;t claim it.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;learn to ask better questions like Thaddaeus&rdquo; lesson. The point isn&rsquo;t his question &mdash; it is Jesus&rsquo;s <em>answer</em>. Look at what Jesus does: he takes an honest, slightly confused question and responds not with a correction but with a promise to come and live inside the person who loves him. The grace is in the answer. Jesus answers the honest question with his own indwelling presence. So when you bring him your real question tonight, you are not risking a rebuke &mdash; you are being invited into the same promise. <em>He doesn&rsquo;t just answer your question; he comes to make his home in you.</em>',
+ foot:'<b>Indicative before imperative.</b> The &ldquo;keep my word&rdquo; of John 14:23 is the <em>fruit</em> of the love Jesus first puts in us and the home he first makes with us &mdash; not the <em>price</em> we pay to earn his presence. We keep his word <b>because</b> he has come to live with us, not in order to get him to come. And notice what Jesus does <em>not</em> do: he never says the question is foolish, never tells Thaddaeus he should already know, never pivots into a debate about the timing of the kingdom. <b>He honors the honest question.</b>'
+},
+questions:[
+ {lead:'Thaddaeus&rsquo;s one recorded line is a sincere question.', rest:'What honest question about Jesus are you carrying that you have never voiced &mdash; and what has kept you from saying it out loud?'},
+ {lead:'He wondered why Jesus shows himself to disciples and not the whole world.', rest:'How does Jesus reveal himself to the world today &mdash; and what is <em>your</em> part in that?'},
+ {lead:'He had to share a name with the betrayer, and is mostly remembered by nicknames.', rest:'How do you handle being defined by associations you did not choose &mdash; a family reputation, a past, a label that stuck?'},
+ {lead:'Jesus answered his question with a promise of presence, not a debate.', rest:'When you bring God a real question, do you actually <em>expect</em> an answer &mdash; or have you stopped expecting one?', land:true},
+ {lead:'What is one question you could bring to <em>this group</em> tonight', rest:'instead of carrying it alone?', land:true}
+],
+couples:'Is there an honest question about faith, or about each other, that one of you has been carrying silently, afraid it would sound like doubt? What would it look like to ask it out loud this week, and to receive it the way Jesus received Thaddaeus&rsquo;s &mdash; without scoring it?',
+dry:'<em>&ldquo;What is a question about God you have had for a long time and never actually asked anyone?&rdquo;</em> Naming it as normal and safe usually opens the room faster than any other prompt in the series.',
+takeaway:'&ldquo;Your honest question isn&rsquo;t a threat to your faith &mdash; <b>it is an invitation.</b> Jesus answers the honest question with his own presence: we will come to him and make our home with him.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he welcomes the honest question and answers it with himself &mdash; that he does not reveal his love only in spectacle the world can see, but by coming to make his home in those who love him. Ask him to give the group the courage to voice what they have been carrying, and to meet each question with his indwelling presence.',
+readaloud:'<b>Read at 0:08:</b> John 14:22&ndash;24, his question and Jesus&rsquo;s answer. Then read the four list verses so the group hears the name situation for themselves &mdash; Matthew 10:3, Mark 3:18, Luke 6:16, Acts 1:13. Hearing &ldquo;Thaddaeus&rdquo; in two lists and &ldquo;Judas the son of James&rdquo; in the other two, back to back, lets the group feel the puzzle before you explain it.',
+anchors:[
+ {ref:'Matt 10:3 &middot; Mark 3:18', note:'listed as Thaddaeus'},
+ {ref:'Luke 6:16 &middot; Acts 1:13', note:'listed as Judas the son of James'},
+ {ref:'John 14:21', note:'the promise that prompts the question'},
+ {ref:'John 14:22', note:'his one recorded line; &ldquo;Judas, not Iscariot&rdquo;'},
+ {ref:'John 14:23', note:'we will come to him and make our home with him'}
+],
+glance:[
+ {dt:'Names', dd:'Thaddaeus &middot; Judas the son of James &middot; <span class="note">Lebbaeus in some manuscripts</span>'},
+ {dt:'Not to be confused with', dd:'Judas Iscariot. John 14:22 says &ldquo;Judas (not Iscariot)&rdquo; on purpose.'},
+ {dt:'Recorded words', dd:'One sentence, John 14:22 &mdash; and it drew out the indwelling-presence promise of the next verse.'},
+ {dt:'Epistle of Jude?', dd:'Sometimes attributed to him. <span class="note">Uncertain and debated. Not asserted here</span>'}
+]
+});
+S.push({
+n:11, slug:'simon-zealot', name:'Simon the Zealot', group:3,
+sub:'Simon the Cananaean &middot; no recorded words, one loaded label',
+hook:'The political radical who became a brother &mdash; living proof that the gospel can seat <em>sworn enemies</em> at the same table and make them one.',
+essence:'The political radical who became a brother.',
+warn:'<b>A word study worth getting right, and it takes twenty seconds.</b> Your ESV reads &ldquo;Simon the Zealot&rdquo; in all four lists, but the word behind the English differs. Matthew and Mark preserve an Aramaic-derived term, <i>kananaios</i> &mdash; see the ESV footnote at Matt 10:4 and Mark 3:18. It does <b>not</b> mean &ldquo;from Cana&rdquo; or &ldquo;from Canaan.&rdquo; It is the Aramaic word for zealot. Luke, writing for a Greek audience, simply translated it (<i>z&emacr;l&omacr;t&emacr;s</i>). <b>All four lists agree: this is Simon the Zealot. Two words, one meaning.</b> Have someone read the footnote out loud.',
+spine:[
+ {ref:'Matt 10:3&ndash;4 &middot; the roster', head:'A zealot and a tax collector', body:'On the same team of twelve, Jesus placed Simon the Zealot and Matthew the tax collector. One worked for Rome and profited from the occupation. The other burned to see men like that gone.'},
+ {ref:'John 18:36 &middot; the re-ordering', head:'&ldquo;My kingdom is not of this world&rdquo;', body:'Imagine a zealot hearing that. Watching Jesus refuse the sword, refuse the rebellion, refuse the crown the crowd tried to force on him. Following Jesus meant a deep re-ordering of what he expected God to do.'},
+ {ref:'Eph 2:14 &middot; the result', head:'&ldquo;He himself is our peace&rdquo;', body:'Christ has made us both one and broken down in his flesh the dividing wall of hostility. Not a unity the world can manufacture. One Jesus created by calling enemies into one body.'}
+],
+links:['Then a new King','Then one body'],
+prep:[
+ 'Simon is one of the disciples Scripture names but never quotes. We get his name and a single, loaded label, and nothing else &mdash; no recorded words, no recorded deeds. That makes him the right disciple for <em>this</em> moment in the series, because the one thing we know about him is the most provocative thing on the roster: <b>Jesus put a political radical and a tax collector on the same team.</b>',
+ 'By every cultural rule of their day, these two were enemies. <b>Jesus made them brothers.</b> Tonight&rsquo;s job is to let the group feel how scandalous that was, then turn their eyes from Simon&rsquo;s politics to the Christ who reconciles enemies into one body.',
+ '<b>The trap to avoid:</b> &ldquo;Be more zealous like Simon.&rdquo; That misses the whole point. Simon&rsquo;s zeal isn&rsquo;t the hero of the story &mdash; it is the raw material Jesus <em>re-aimed</em>. The lesson isn&rsquo;t &ldquo;care harder about your cause.&rdquo; It is that Jesus gives a man whose deepest allegiance was a political vision a <em>deeper</em> allegiance, then seats him next to the very kind of man he would have despised. <b>Keep returning to the reconciliation, not the intensity.</b>'
+],
+scenes:[
+ {tag:'Luke 6:15', head:'Passionate', body:'Zealot is not a neutral word. It names someone who cares to the point of risk &mdash; whose convictions move his feet.'},
+ {tag:'Matt 10:4', head:'Intense and committed', body:'A man defined by a cause big enough to organize his whole identity around. He was not a bystander to his world.'},
+ {tag:'Mark 3:18', head:'Politically charged', body:'His loyalty had an edge to it &mdash; a clear sense of <em>us and them</em>, of a wrong that needed righting.'},
+ {tag:'Acts 1:13', head:'And he stayed', body:'He is there in the upper room after the resurrection, among the eleven who waited and prayed. <em>He didn&rsquo;t bolt when the Messiah turned out to be a crucified one instead of a conquering one.</em>'}
+],
+leadernote:'<b>Don&rsquo;t invent a personality for Simon to make him a better illustration.</b> Everything we can say here we are reading <em>off the label</em>, not out of a narrative &mdash; the Gospels give us no scenes, no quotes, no character moments. Resist filling the silence with details Scripture doesn&rsquo;t give. The restraint is the point, and modeling that honesty in front of the group is worth as much as the content.',
+versus:{
+ aK:'What a zealot hoped for', aQuote:'A free Israel, and Rome driven out.',
+ aBody:'National, political deliverance, possibly by force. If he hoped for a Messiah at all, he probably hoped for one who would <em>fight</em>. A note on precision: the organized Zealot <b>party</b> crystallized more fully later in the century, so frame the temperament and affiliation, don&rsquo;t over-claim a membership card.',
+ bK:'What he had to learn instead', bQuote:'&ldquo;If my kingdom were of this world, my servants would have been fighting.&rdquo;',
+ bBody:'An allegiance to Jesus that <em>outranked</em> his political identity. He came in loyal to a cause. He had to learn to be loyal to a Person first, and to let every other loyalty fall in line behind that one.'
+},
+down:'He had to lose his grip on the kingdom he wanted to receive the kingdom Jesus came to bring.',
+after:'That is a familiar gap in this series &mdash; <b>right to care, wrong about how God would act.</b> Peter wanted a conquering Messiah and missed the cross. Simon, we can reasonably guess, wanted a liberating Messiah and had to discover that the liberation Jesus brought was bigger and stranger than driving out Rome.',
+contribution:[
+ {dt:'Living proof the gospel reconciles enemies', dd:'Don&rsquo;t rush past this &mdash; it <em>is</em> the legacy. The zealot and the tax collector sat at the same table, under the same Lord, for three years, and the early church told that story for a reason.'},
+ {dt:'He stayed', dd:'Whatever re-ordering of his loyalties Jesus required, Simon let it happen. <b>The zealot became a man of the church</b> (Acts 1:13).'},
+ {dt:'The roster itself preaches', dd:'The mere <em>fact</em> of Simon-and-Matthew on one list says it: in Christ, the deepest political and social hostilities lose their power to divide.'},
+ {dt:'Named in all four lists', dd:'Matt 10:4, Mark 3:18, Luke 6:15, Acts 1:13 &mdash; always there, never quoted.'}
+],
+tradition:'Beyond Acts 1:13 the Bible says nothing more about Simon. Church tradition places his later ministry in various locations &mdash; <b>Persia, Egypt, and elsewhere are all named in different accounts</b> &mdash; and tells of his martyrdom. <b>These accounts conflict with one another and are not in Scripture.</b> If someone asks how Simon died, the honest answer is: <em>we don&rsquo;t know. Scripture doesn&rsquo;t say, and the traditions don&rsquo;t agree.</em> That honesty is more faithful than a confident story.',
+guardrail:{
+ speech:'This is <em>not</em> a &ldquo;be more zealous like Simon&rdquo; lesson, and it is not a &ldquo;pick the right cause&rdquo; lesson either. Look at what actually changed Simon: not better politics, not more passion &mdash; <em>a new King.</em> Jesus didn&rsquo;t reach Simon by out-arguing his cause. He reached him by being worth more than the cause, and then by seating him next to the man he used to hate. The reconciliation isn&rsquo;t something Simon achieved by being open-minded. It is something <em>Christ created</em> by calling enemies into one body. We don&rsquo;t manufacture this unity by trying harder to get along. We receive it because Jesus is our peace. Then we live like it is true.',
+ foot:'<b>Indicative before imperative.</b> Christ first makes enemies into one body &mdash; <em>then</em> we walk in that oneness. The reconciliation comes as a gift before it becomes a calling. We don&rsquo;t build the bridge; we cross the one he already built. Paint the picture before you say it: picture the twelve at a meal. Down the table sits Matthew, who built a comfortable life skimming taxes for the occupying empire. A few seats over sits Simon, whose whole identity was burning to see men like Matthew gone. Left to themselves, enemies. <b>And now they pass the bread to each other.</b> Only Jesus does that.'
+},
+questions:[
+ {lead:'Simon the Zealot and Matthew the tax collector were political enemies on the same team.', rest:'Who would be your Matthew &mdash; the person you genuinely can&rsquo;t picture God seating right next to you?'},
+ {lead:'Simon&rsquo;s zeal got a new target rather than disappearing.', rest:'What passion or cause in you needs to be <em>re-aimed</em> at Jesus &mdash; not killed, but resubmitted to him?'},
+ {lead:'The early church united people the culture said could never share a table.', rest:'Is your church, or this group, actually that? Or are we quietly sorted by politics, class and background while telling ourselves we are not?'},
+ {lead:'Following Jesus meant Simon loosened his grip on a cause he would have killed for.', rest:'What loyalty &mdash; political, cultural, personal &mdash; might Jesus be asking you to hold <em>more loosely than him</em>?', land:true},
+ {lead:'Where is God calling you to be reconciled', rest:'to someone you have written off as on &ldquo;the other side&rdquo;?', land:true}
+],
+couplesNote:'<b>Set the tone before question 1.</b> These touch live political nerves. This is a <em>table</em>, not a debate.',
+couples:'Is there a &ldquo;side&rdquo; that has quietly crept between the two of you &mdash; a topic, a family loyalty, a conviction you each hold tightly? What would it look like to let your shared allegiance to Christ outrank it, the way Jesus made it outrank Simon&rsquo;s politics?',
+dry:'<em>&ldquo;Name a duo from public life right now who you literally cannot imagine being friends. Now &mdash; that is the kind of pair Jesus put on his own staff.&rdquo;</em> It makes the scandal land before anyone has to get personal.',
+takeaway:'&ldquo;Jesus doesn&rsquo;t ask you to care about less. <b>He gives you Someone worth more</b> &mdash; and seats you at a table with the very people you would have called enemies. Only the gospel does that.&rdquo;',
+prayer:'Close in prayer. Thank Jesus that he is our peace &mdash; that he takes our fiercest loyalties and re-aims them onto himself, and that he creates a unity the world cannot. Ask him to make the group a real table: people whose shared allegiance to Christ runs deeper than every line that is supposed to divide them. Name, if the room is ready, the &ldquo;other side&rdquo; people each of us has written off, and ask for the grace to be reconciled.',
+readaloud:'<b>Read at 0:08:</b> the four lists, back to back on purpose &mdash; Matthew 10:2&ndash;4, Mark 3:16&ndash;19, Luke 6:14&ndash;16, Acts 1:13. The group will notice two things: he is <em>always there</em>, chosen and listed and present in the upper room, and he is <em>never quoted.</em> Then read Ephesians 2:14&ndash;16 to seed where the night is going.',
+anchors:[
+ {ref:'Matt 10:4 &middot; Mark 3:18', note:'&ldquo;Simon the Zealot&rdquo;; ESV footnote, Greek <i>kananaios</i>'},
+ {ref:'Luke 6:15', note:'Simon who was called the Zealot'},
+ {ref:'Acts 1:13', note:'present in the upper room'},
+ {ref:'John 18:36', note:'my kingdom is not of this world'},
+ {ref:'John 6:15', note:'Jesus withdraws when they try to make him king'},
+ {ref:'Eph 2:14&ndash;16', note:'Christ has made us both one; the wall of hostility broken'}
+],
+glance:[
+ {dt:'The label', dd:'Fiery, nationalistic, anti-Rome zeal. <span class="note">The organized Zealot party crystallized later &mdash; frame the temperament, don&rsquo;t over-claim the party</span>'},
+ {dt:'Every biblical mention', dd:'The four lists of the Twelve only. <span class="note">No recorded words or deeds</span>'},
+ {dt:'The scandal', dd:'Seated on the same team as Matthew the tax collector. Natural enemies made brothers.'},
+ {dt:'Next', dd:'Judas Iscariot, the sobering capstone. Worth teeing up in the close.'}
+]
+});
+S.push({
+n:12, slug:'judas', name:'Judas Iscariot', group:3,
+sub:'Son of Simon Iscariot &middot; the sobering capstone',
+hook:'Nearness to Jesus without surrender. <em>Proximity to Jesus is not the same as surrender to him.</em>',
+essence:'Nearness to Jesus without surrender.',
+warn:'<b>The trap here is fear-mongering, and it is a real risk.</b> Do not turn Judas into a horror story, do not speculate about his eternal destiny, and do not let the room slide into &ldquo;don&rsquo;t be Judas&rdquo; dread. <b>Scripture does not invite us to pronounce a verdict on Judas&rsquo;s soul, and neither do we.</b> The point is never terror; it is honest self-examination held inside grace. Keep returning to the contrast that <em>is</em> in the text: Peter and Judas both failed Jesus terribly the same week, and the difference was repentance that turned back, not the size of the sin.',
+spine:[
+ {ref:'John 12:6 &middot; where it began', head:'The moneybag', body:'His ruin didn&rsquo;t begin with the betrayal. It began with small, hidden theft. He had charge of the bag and used to help himself. The thief was in place long before the price was named.'},
+ {ref:'Matt 26:15 &middot; the price', head:'Thirty pieces of silver', body:'The price of a slave (Ex 21:32). He was with Jesus without being for Jesus, and finally used his place near him to serve himself.', cost:true},
+ {ref:'Matt 27:3&ndash;5 &middot; the end', head:'Real remorse that never turned back', body:'He changed his mind, returned the silver, said &ldquo;I have sinned by betraying innocent blood&rdquo; &mdash; and went out and hanged himself. The anguish was genuine. It turned inward, not homeward.', cost:true}
+],
+links:['Then the sale','Then the road out'],
+prep:[
+ 'We end the series here on purpose. After eleven nights of watching Jesus call, form, correct and commission ordinary men, we close with the one who was just as close &mdash; closer than most of us will ever be &mdash; and yet was lost. <b>Judas walked with Jesus for three years, was trusted with the group&rsquo;s money, heard every sermon, saw every miracle, and had his feet washed by Jesus&rsquo;s own hands, and never surrendered his heart.</b>',
+ 'That is the sobering capstone. <b>But this is not where we leave the group.</b> The final word of the series is not Judas; it is the door Peter walked back through, still open tonight to anyone in the room.',
+ '<b>The trap to avoid:</b> fear-mongering. The point is never terror; it is honest self-examination held inside grace. Peter and Judas both failed Jesus terribly the same week &mdash; the difference was repentance that turned back, not the size of the sin. <b>The table is still open. That is where the night lands.</b>'
+],
+scenes:[
+ {tag:'John 12:5&ndash;6', head:'The anointing exposed him', body:'When Mary poured out costly ointment, Judas objected: <q>Why was this not sold and given to the poor?</q> It sounded spiritual. John strips the mask off: <q>not because he cared about the poor, but because he was a thief.</q> <em>Extravagant love toward Jesus looked like waste to him.</em>'},
+ {tag:'John 13:29 &middot; 12:6', head:'He was the treasurer', body:'Of the Twelve, the one trusted with the money is the one we are warned was quietly stealing from it.'},
+ {tag:'Matt 26:22', head:'He blended in perfectly', body:'None of the Eleven seem to have suspected him. At the Supper they each asked <q>Is it I, Lord?</q> <em>That is the unsettling part.</em>'},
+ {tag:'John 6:70&ndash;71', head:'Jesus knew from the start', body:'<q>Did I not choose you, the twelve? And yet one of you is a devil.</q> Jesus chose him, loved him, taught him, and washed his feet knowing all of it. <em>This is not a story of a good man who suddenly snapped.</em>'}
+],
+leadernote:'Don&rsquo;t paint Judas as an obvious monster. <b>The whole warning collapses if the group pictures someone they could easily spot.</b> He looked like a disciple. He sounded like a disciple. The danger isn&rsquo;t being a visible villain &mdash; it is a divided heart no one else can see.',
+versus:{
+ aK:'Peter, that same week', aQuote:'&ldquo;He went out and wept bitterly.&rdquo;',
+ aBody:'Denied Jesus three times to a servant girl&rsquo;s face, swearing he never knew the man. Then his remorse turned <em>back toward Jesus</em>, and he went looking for the risen Christ on a beach.',
+ bK:'Judas, that same week', bQuote:'&ldquo;I have sinned by betraying innocent blood.&rdquo;',
+ bBody:'He felt it so deeply he gave the money back and confessed the truth out loud. But his remorse turned <em>inward and away.</em> He wept and never came home.'
+},
+down:'The difference was not the size of the sin. It was which way the remorse turned.',
+after:'And look at how Jesus treated Judas even at the end. He washed Judas&rsquo;s feet at that Supper, knowing. When Judas came in the dark with the soldiers and kissed him, Jesus did not recoil &mdash; he said <b>&ldquo;Friend, do what you came to do&rdquo;</b> (Matt 26:50), and <b>&ldquo;Judas, would you betray the Son of Man with a kiss?&rdquo;</b> (Luke 22:48). <b>Grace was extended to Judas to the very last moment. The door was never slammed.</b>',
+contribution:[
+ {dt:'Proof that proximity isn&rsquo;t surrender', dd:'Judas is the dark backdrop against which the whole series shines. Eleven ordinary, uneven men were transformed; one equally-positioned man was not &mdash; and the difference wasn&rsquo;t access to Jesus. They all had that.'},
+ {dt:'Two truths in one breath', dd:'Delivered up &ldquo;according to the definite plan and foreknowledge of God&rdquo; (Acts 2:23), and &ldquo;woe to that man by whom he is betrayed&rdquo; (Luke 22:22). The place Scripture refuses to let us choose between &ldquo;it was all decided&rdquo; and &ldquo;he really chose.&rdquo; <b>Both.</b>'},
+ {dt:'The end, told plainly', dd:'The priests would not take the silver; he threw it into the temple. They bought the potter&rsquo;s field with the blood money &mdash; the Field of Blood (Matt 27:8; Acts 1:19).'},
+ {dt:'And the Twelve were made whole', dd:'Peter recounts the end to the gathered believers, says Judas turned aside &ldquo;to go to his own place&rdquo; (Acts 1:25), and Matthias was numbered with the eleven apostles (Acts 1:26).'}
+],
+tradition:'Two places to stay honest. <b>&ldquo;Iscariot&rdquo;</b> is most likely <i>ish-Kerioth</i>, &ldquo;man of Kerioth&rdquo; in Judea, which would make him quite possibly the only non-Galilean of the Twelve &mdash; <b>a widely held reading of the name, not stated outright in Scripture.</b> And the <b>disillusionment motive</b> &mdash; that he wanted a Messiah who would seize power and grew cold toward a King who kept talking about a cross &mdash; is <b>an inference from the texts, not stated outright.</b> It fits the anointing scene well; teach it as a reasonable reading, not a fact. On the manner of his death, Matthew and Acts are read together by the church, the fall following the hanging.',
+guardrail:{
+ speech:'Hear me carefully. This is <em>not</em> a &ldquo;don&rsquo;t be Judas&rdquo; scare, and we are not here to guess at where Judas&rsquo;s soul ended up &mdash; Scripture doesn&rsquo;t, and neither will we. The point is one quiet question, and it is a hopeful one. Two men failed Jesus badly that week. One came back and one didn&rsquo;t, and the difference wasn&rsquo;t how bad the sin was &mdash; Peter&rsquo;s was bad too. The difference was repentance: turning back toward Jesus instead of away. And here is the gospel in it &mdash; <em>the exact same door Peter walked back through is open right now, tonight, to anyone in this room.</em> Jesus called Judas &ldquo;friend&rdquo; at the betrayal. He washed the feet of the man who sold him. There is no failure in your past too far down the road to turn around. The only thing Judas didn&rsquo;t do was turn back. <em>You can.</em>',
+ foot:'<b>Grace before command, to the very end of the series.</b> Across twelve weeks we have watched Jesus call the impulsive, the obscure, the doubting, the radical &mdash; and now, at the close, we see that what he asks for is not a flawless record but a surrendered heart that keeps turning back to him. The invitation isn&rsquo;t &ldquo;do better.&rdquo; It is <b>come home.</b> Notice too what Matthew gives us and refuses to give us: real remorse, a confession out loud, an attempt to undo it &mdash; and no verdict on Judas&rsquo;s eternity. Keep the group&rsquo;s eyes on what the text says and off the speculation it carefully avoids.'
+},
+questions:[
+ {lead:'Judas had everything &mdash; proximity, trust, three years with Jesus &mdash; and was lost.', rest:'What does that say about the gap between being <em>near</em> Jesus and actually <em>following</em> him?'},
+ {lead:'His ruin began small, with the moneybag.', rest:'What small compromise are you tolerating right now that might be quietly hardening your heart?'},
+ {lead:'He felt real remorse and even returned the money, but never returned to Jesus.', rest:'What is the difference between worldly regret and real repentance?'},
+ {lead:'We can lead a group, know all the words, and still hold our heart back.', rest:'Be honest with yourself: is there a place you are keeping from Jesus?', land:true},
+ {lead:'Peter and Judas both failed Jesus badly the same week &mdash; the difference was turning back.', rest:'What is keeping you from turning back to Jesus today?', land:true}
+],
+couplesNote:'<b>Handle these gently and give real space.</b> This is the most tender night of the series. Don&rsquo;t rush to fill silence; let people sit with the questions.',
+couples:'Is there a &ldquo;moneybag&rdquo; in your marriage &mdash; a small, tolerated thing the two of you have learned to look past &mdash; that is quietly costing you? And is there a place where you have stopped turning back toward each other, the way Peter turned back to Jesus? What would coming home look like this week?',
+dry:'A gentle opener that keeps it self-examining rather than morbid: <em>&ldquo;What is a small thing &mdash; a habit, an attitude, a tolerated compromise &mdash; that you have watched grow bigger in someone&rsquo;s life over time? What makes those things so easy to ignore at the start?&rdquo;</em> It surfaces the moneybag theme without anyone having to confess first.',
+takeaway:'&ldquo;The difference between Peter and Judas wasn&rsquo;t the size of the sin &mdash; <b>it was turning back.</b> The same door Peter walked through is still open to you tonight.&rdquo;',
+prayer:'<b>Close the series, not just the night.</b> Look back over the twelve: the loud one and the quiet one, the doubter and the zealot, the obscure and the betrayer &mdash; twelve uneven men, and one faithful Lord who called, formed, corrected and kept coming after every one of them. That same Jesus is in the room. End on grace and open invitation: thank him that he calls failures &ldquo;friend,&rdquo; that he washes the feet of people who let him down, and that no one here is too far gone to turn back. Then leave the door open &mdash; pray simply, and invite anyone who senses the Lord nudging them to come home to do exactly that. <br><br><b>Optional:</b> close the series with a response or communion time. Bread and cup as the tangible sign that the table is still open. Keep it unhurried and pressure-free &mdash; an invitation, never an altar call by force.',
+readaloud:'<b>Read at 0:08, back to back:</b> John 13:21&ndash;30 (the morsel at the Last Supper), then Matthew 27:3&ndash;10 (Judas changes his mind and returns the silver). Reading these together lets the group hear both ends of the story at once &mdash; the quiet exit into the night, and the real anguish that came after but never turned back to Jesus.',
+anchors:[
+ {ref:'John 6:70&ndash;71', note:'known from the start'},
+ {ref:'John 12:4&ndash;6', note:'the costly anointing and the moneybag'},
+ {ref:'John 13:21&ndash;30', note:'the morsel; &ldquo;do quickly&rdquo;; and it was night'},
+ {ref:'Matt 26:14&ndash;16', note:'thirty pieces of silver'},
+ {ref:'Matt 26:47&ndash;50 &middot; Luke 22:47&ndash;48', note:'the kiss; &ldquo;Friend&rdquo;'},
+ {ref:'Matt 27:3&ndash;10', note:'remorse, returned silver, his death'},
+ {ref:'Acts 1:16&ndash;20, 25&ndash;26', note:'the field; his own place; Matthias replaces him'},
+ {ref:'Acts 2:23 &middot; Luke 22:22', note:'the definite plan, and real guilt'}
+],
+glance:[
+ {dt:'Name', dd:'Judas, son of Simon Iscariot. <span class="note">&ldquo;Iscariot&rdquo; likely <i>ish-Kerioth</i>, man of Kerioth in Judea &mdash; possibly the only non-Galilean of the Twelve</span>'},
+ {dt:'Role', dd:'Treasurer &mdash; had charge of the moneybag (John 12:6; 13:29). And a thief (John 12:6).'},
+ {dt:'Always listed last', dd:'In every apostle list, always with the tag: &ldquo;who betrayed him&rdquo; (Matt 10:4; Mark 3:19), &ldquo;who became a traitor&rdquo; (Luke 6:16).'},
+ {dt:'The bookend', dd:'Read alongside Session 1. The series opens with the man who came back and closes with the man who didn&rsquo;t. <b>The door is the same door.</b>'}
+]
+});
+</script>
+<script>
+/* ---------------------------------------------------------------
+   The Twelve — Leader's Console
+   Static single-file app. No dependencies, no network calls.
+   Routes: #/  (overview)  ·  #/1 … #/12  (a session)
+   --------------------------------------------------------------- */
+
+var GROUPS = [
+  { n:1, title:'The first four',
+    detail:'Always named first in all four apostle lists, and always headed by Peter. Contains the inner three.' },
+  { n:2, title:'The second four',
+    detail:'Always named second, and always headed by Philip. Four men John shows us in conversation with Jesus.' },
+  { n:3, title:'The last four',
+    detail:'Always named last, and always ending with Judas. Three we know almost nothing about, and one we wish we knew less.' }
+];
+
+var BEATS = [
+  { at:0,  min:5, name:'Welcome &amp; gather' },
+  { at:5,  min:3, name:'Open &amp; frame' },
+  { at:8,  min:5, name:'Read the Word' },
+  { at:13, min:8, name:'His story',            cls:'teach' },
+  { at:21, min:7, name:'His personality',      cls:'teach' },
+  { at:28, min:8, name:'His perspective',      cls:'teach' },
+  { at:36, min:8, name:'His contribution',     cls:'teach' },
+  { at:44, min:6, name:'The Christ-centered turn', cls:'pivot' },
+  { at:50, min:8, name:'Discussion',           cls:'heart' },
+  { at:58, min:2, name:'Close' }
+];
+
+var CLOCK_KEY = 'twelve-console-start';
+
+/* ---------------- helpers ---------------- */
+function el(tag, cls, html){
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html != null) n.innerHTML = html;
+  return n;
+}
+function byN(n){
+  for (var i=0;i<S.length;i++){ if (S[i].n === n) return S[i]; }
+  return null;
+}
+function ord(n){ return n < 10 ? '0' + n : '' + n; }
+
+/* ---------------- nav rail ---------------- */
+function buildNav(){
+  var nav = document.getElementById('nav');
+  nav.innerHTML = '';
+
+  var brand = el('div','brand');
+  brand.appendChild(el('a', null,
+    '<span class="sup">D Group series</span>' +
+    '<span class="nm">The Twelve</span>' +
+    '<span class="cad">Twelve sessions, one disciple a night. 60-minute leader&rsquo;s guides, ESV throughout.</span>'));
+  brand.querySelector('a').setAttribute('href','#/');
+  nav.appendChild(brand);
+
+  GROUPS.forEach(function(g){
+    var wrap = el('div','navgroup');
+    wrap.appendChild(el('div','gl', g.title));
+    S.filter(function(s){ return s.group === g.n; })
+     .sort(function(a,b){ return a.n - b.n; })
+     .forEach(function(s){
+       var a = el('a','navlink',
+         '<span class="i">' + ord(s.n) + '</span><span>' + s.name + '</span>');
+       a.setAttribute('href','#/' + s.n);
+       a.setAttribute('data-n', s.n);
+       wrap.appendChild(a);
+     });
+    nav.appendChild(wrap);
+  });
+
+  var foot = 'Use <b>&larr;</b> and <b>&rarr;</b> to move between sessions, <b>Esc</b> for the overview.';
+  /* Only offer the map link when this page is served beside the TV companion. */
+  if (/\/guides\/?$/.test(location.pathname)){
+    foot += '<br><br><a href="../" style="color:var(--brass);text-decoration:none">&larr; The disciple map</a>';
+  }
+  nav.appendChild(el('div','navfoot', foot));
+}
+
+function markNav(n){
+  var links = document.querySelectorAll('.navlink');
+  for (var i=0;i<links.length;i++){
+    links[i].classList.toggle('on', parseInt(links[i].getAttribute('data-n'),10) === n);
+  }
+}
+
+/* ---------------- session clock ---------------- */
+function fmtClock(totalMin){
+  var m = ((totalMin % 1440) + 1440) % 1440;
+  var h = Math.floor(m / 60), mm = m % 60;
+  var ampm = h >= 12 ? 'pm' : 'am';
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  return h12 + ':' + (mm < 10 ? '0' + mm : mm) + ampm;
+}
+
+function renderClock(){
+  var input = document.getElementById('start');
+  if (!input) return;
+  var v = (input.value || '').split(':');
+  var base = (parseInt(v[0],10) * 60) + parseInt(v[1],10);
+  if (isNaN(base)) base = 19 * 60;
+
+  var now = new Date();
+  var nowMin = now.getHours() * 60 + now.getMinutes();
+  var elapsed = nowMin - base;
+  var live = elapsed >= 0 && elapsed < 60;
+
+  var rows = document.querySelectorAll('#beats .beat');
+  for (var i=0;i<rows.length;i++){
+    var at = parseInt(rows[i].getAttribute('data-at'),10);
+    var next = (i+1 < rows.length) ? parseInt(rows[i+1].getAttribute('data-at'),10) : 60;
+    rows[i].querySelector('.clock').textContent = fmtClock(base + at);
+    rows[i].classList.toggle('now', live && elapsed >= at && elapsed < next);
+  }
+}
+
+function clockRail(){
+  var html = '<h2>Session clock</h2>' +
+    '<div class="startline"><label for="start">Started</label>' +
+    '<input type="time" id="start" value="19:00"></div>' +
+    '<ol class="beats" id="beats">';
+  BEATS.forEach(function(b){
+    html += '<li class="beat ' + (b.cls || '') + '" data-at="' + b.at + '">' +
+            '<span class="clock"></span>' +
+            '<span class="name">' + b.name + '<span class="mins">' + b.min + '</span></span></li>';
+  });
+  html += '</ol>' +
+    '<p class="teach-note">The four middle beats (0:13&ndash;0:44) are one flowing 30-minute narration with room to pause &mdash; not four lectures. Let discussion bleed in early when the room is engaged.</p>' +
+    '<div class="clockwarn"><b>Check the clock at 0:44.</b> If teaching ran long, trim <b>His contribution</b> &mdash; never the discussion block. The discussion is the point.</div>';
+  return html;
+}
+
+/* ---------------- one session ---------------- */
+function renderSession(s){
+  var m = document.getElementById('main');
+  var h = '';
+
+  /* masthead + spine */
+  h += '<div class="wrap"><header class="mast">' +
+       '<div class="eyebrow"><span>Session ' + s.n + ' of 12</span>' +
+       '<span class="sep">/</span><span class="plain">60-minute leader&rsquo;s guide</span>' +
+       '<span class="sep">/</span><span class="plain">ESV throughout</span></div>' +
+       '<h1>' + s.name + '<span class="sub">' + s.sub + '</span></h1>' +
+       '<p class="hook">' + s.hook + '</p>';
+
+  h += '<div class="spine"><div class="spine-label">The spine of the night</div><div class="stations">';
+  s.spine.forEach(function(st, i){
+    if (i > 0){
+      h += '<div class="link"><div class="rule"></div><div class="word">' +
+           (s.links[i-1] || '') + '</div></div>';
+    }
+    h += '<div class="station' + (st.cost ? ' cost' : '') + '">' +
+         '<div class="ref">' + st.ref + '</div><h3>' + st.head + '</h3><p>' + st.body + '</p></div>';
+  });
+  h += '</div></div></header>';
+
+  /* working grid */
+  h += '<div class="grid"><aside class="rail">' + clockRail() + '</aside><div class="col">';
+
+  if (s.warn){
+    h += '<section class="tradition" style="margin-top:0"><div class="k">Before you teach</div>' + s.warn + '</section>';
+  }
+
+  h += '<section><div class="shead"><h3 class="t">Why him, and the one trap</h3>' +
+       '<span class="when">Leader&rsquo;s prep</span></div>';
+  s.prep.forEach(function(p){ h += '<p class="lede">' + p + '</p>'; });
+  h += '</section>';
+
+  h += '<section><div class="shead"><h3 class="t">Four scenes</h3>' +
+       '<span class="when">0:21 &middot; his personality</span></div><div class="scenes">';
+  s.scenes.forEach(function(sc){
+    h += '<div class="scene"><div class="tag">' + sc.tag + '</div><h4>' + sc.head + '</h4><p>' + sc.body + '</p></div>';
+  });
+  h += '</div><div class="tradition" style="margin-top:1px"><div class="k">Leader note</div>' + s.leadernote + '</div></section>';
+
+  h += '<section><div class="shead"><h3 class="t">The gap he had to cross</h3>' +
+       '<span class="when">0:28 &middot; his perspective</span></div><div class="versus">' +
+       '<div class="a"><div class="k">' + s.versus.aK + '</div><blockquote>' + s.versus.aQuote +
+       '</blockquote><p>' + s.versus.aBody + '</p></div>' +
+       '<div class="b"><div class="k">' + s.versus.bK + '</div><blockquote>' + s.versus.bQuote +
+       '</blockquote><p>' + s.versus.bBody + '</p></div></div>' +
+       '<p class="downline">' + s.down + '</p>' +
+       '<p class="lede" style="margin-top:20px">' + s.after + '</p></section>';
+
+  h += '<section><div class="shead"><h3 class="t">What he gave the church</h3>' +
+       '<span class="when">0:36 &middot; his contribution</span></div><div class="facts">';
+  s.contribution.forEach(function(c){
+    h += '<div class="fact"><dt>' + c.dt + '</dt><dd>' + c.dd + '</dd></div>';
+  });
+  h += '</div><div class="tradition"><div class="k">Flag it as you go</div>' + s.tradition + '</div></section>';
+
+  h += '<section class="guardrail">' +
+       '<div class="say">0:44 &middot; the Christ-centered turn &mdash; say this out loud</div>' +
+       '<p class="speech">' + s.guardrail.speech + '</p>' +
+       '<p class="foot">' + s.guardrail.foot + '</p></section>';
+
+  h += '<section><div class="shead"><h3 class="t">Discussion</h3>' +
+       '<span class="when">0:50 &middot; protect these 8 minutes</span></div>';
+  if (s.couplesNote){ h += '<p class="lede" style="margin-bottom:18px">' + s.couplesNote + '</p>'; }
+  h += '<ol class="qs">';
+  s.questions.forEach(function(q, i){
+    h += '<li class="' + (q.land ? 'land' : '') + '"><span class="n">' + (i+1) + '</span>' +
+         '<p class="q"><b>' + q.lead + '</b> <span>' + q.rest + '</span></p>' +
+         (q.land ? '<span class="tick">land here</span>' : '') + '</li>';
+  });
+  h += '</ol><div class="couples"><div class="k">For the couples in the room</div>' + s.couples + '</div>' +
+       '<p class="dry"><b>If it runs dry:</b> ' + s.dry + '</p></section>';
+
+  h += '<section class="takeaway"><div class="k">0:58 &middot; the takeaway to carry</div>' +
+       '<blockquote>' + s.takeaway + '</blockquote>' +
+       '<p class="lede" style="margin-top:24px">' + s.prayer + '</p></section>';
+
+  h += '<section><div class="shead"><h3 class="t">Read aloud &amp; quick reference</h3>' +
+       '<span class="when">0:08 &middot; ESV</span></div>' +
+       '<p class="lede" style="margin-bottom:18px">' + s.readaloud + '</p><p class="anchors">';
+  h += s.anchors.map(function(a){ return '<b>' + a.ref + '</b> &mdash; ' + a.note; }).join(' &middot; ');
+  h += '</p><div class="facts" style="margin-top:22px">';
+  s.glance.forEach(function(g){
+    h += '<div class="fact"><dt>' + g.dt + '</dt><dd>' + g.dd + '</dd></div>';
+  });
+  h += '</div></section>';
+
+  /* pager */
+  var prev = byN(s.n - 1), next = byN(s.n + 1);
+  h += '<div class="pager">';
+  h += prev
+    ? '<a href="#/' + prev.n + '"><div class="k">&larr; Session ' + prev.n + '</div><div class="nm">' + prev.name + '</div></a>'
+    : '<a href="#/"><div class="k">&larr; Overview</div><div class="nm">All twelve</div></a>';
+  h += next
+    ? '<a class="r" href="#/' + next.n + '"><div class="k">Session ' + next.n + ' &rarr;</div><div class="nm">' + next.name + '</div></a>'
+    : '<a class="r" href="#/"><div class="k">End of the series &rarr;</div><div class="nm">Back to the overview</div></a>';
+  h += '</div>';
+
+  h += '<footer><b>The Twelve</b> &middot; house style: ESV throughout, grace before command, ' +
+       'extra-biblical traditions flagged as tradition &middot; the full written guide for this night is ' +
+       '<b>' + ord(s.n) + ' ' + s.name + '.md</b></footer>';
+
+  h += '</div></div>';
+
+  m.innerHTML = h;
+
+  var input = document.getElementById('start');
+  try { var saved = localStorage.getItem(CLOCK_KEY); if (saved) input.value = saved; } catch(e){}
+  input.addEventListener('input', function(){
+    try { localStorage.setItem(CLOCK_KEY, input.value); } catch(e){}
+    renderClock();
+  });
+  renderClock();
+}
+
+/* ---------------- overview ---------------- */
+function renderOverview(){
+  var m = document.getElementById('main');
+  var h = '<div class="wrap"><header class="ov-mast">' +
+    '<div class="eyebrow"><span>D Group series</span><span class="sep">/</span>' +
+    '<span class="plain">Twelve sessions</span><span class="sep">/</span>' +
+    '<span class="plain">1st &amp; 3rd Fridays</span></div>' +
+    '<h1>The Twelve<span class="sub">One disciple a night, Simon Peter through Judas Iscariot</span></h1>' +
+    '<p class="ov-lede">Jesus&rsquo;s strategy for reaching the world was not a program. It was <em>twelve ordinary, uneven, ' +
+    'often-wrong men</em> he lived with for three years.</p>' +
+    '<p class="ov-note">Studying them one at a time does two things for a disciple-making group. ' +
+    '<b>It normalizes the mess</b> &mdash; these were fishermen, a tax collector, a political radical, a doubter, a betrayer; ' +
+    'if Jesus built his church on <em>them</em>, no one in the room is too ordinary or too broken to be used. ' +
+    'And <b>it keeps the eyes on Christ</b> &mdash; every disciple&rsquo;s story is really a story about how Jesus called, ' +
+    'formed, corrected and commissioned a particular kind of person. The disciple is the window; Jesus is the view.</p>' +
+    '<p class="ov-note"><b>The guardrail for the whole series:</b> the point of each night is never &ldquo;be more like Peter, ' +
+    'or Thomas, or Matthew.&rdquo; It is &ldquo;see how Jesus dealt with this person, and trust that he deals with you the same way.&rdquo; ' +
+    'We resist turning the apostles into self-improvement mascots.</p>' +
+    '</header>';
+
+  GROUPS.forEach(function(g){
+    h += '<section class="ovgroup"><div class="gh"><h3 class="t">' + g.title + '</h3>' +
+         '<div class="d">' + g.detail + '</div></div><div class="cards">';
+    S.filter(function(s){ return s.group === g.n; })
+     .sort(function(a,b){ return a.n - b.n; })
+     .forEach(function(s){
+       h += '<a class="card" href="#/' + s.n + '"><div class="i">Session ' + ord(s.n) + '</div>' +
+            '<h4>' + s.name + '</h4><p>' + s.essence + '</p></a>';
+     });
+    h += '</div></section>';
+  });
+
+  h += '<div class="howto"><div class="k">How to use this in the room</div><ul>' +
+    '<li>Click any disciple to open that night&rsquo;s <b>console</b>: the spine of the night, the four scenes, ' +
+    'the spoken guardrail, and the five questions.</li>' +
+    '<li>Set <b>Started</b> on the session clock and every beat gets a real wall-clock time. ' +
+    'The beat you are in highlights itself.</li>' +
+    '<li><kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between sessions. <kbd>Esc</kbd> comes back here. ' +
+    'Full screen with <kbd>F11</kbd>, or <kbd>Cmd</kbd>+<kbd>Ctrl</kbd>+<kbd>F</kbd> on a Mac.</li>' +
+    '<li>The <b>guardrail</b> block on each session is written to be read aloud, word for word. That is the pivot of the night.</li>' +
+    '<li>Anything outside Scripture is flagged <b>tradition, not Scripture</b>. Say it that way to the room.</li>' +
+    '</ul></div>';
+
+  h += '<footer><b>Twelve sessions &asymp; six months</b> at a 1st and 3rd Friday cadence. ' +
+    'The sessions stand alone but build best in order, and there is a natural half-time after Session 6. ' +
+    'House style: ESV throughout, a Christ-centered guardrail in every session (grace before command), ' +
+    'questions calibrated for a mixed singles and couples group.</footer>';
+
+  h += '</div>';
+  m.innerHTML = h;
+}
+
+/* ---------------- router ---------------- */
+function route(){
+  var hash = location.hash.replace(/^#\/?/, '');
+  var n = parseInt(hash, 10);
+  var s = (!isNaN(n)) ? byN(n) : null;
+  if (s){ renderSession(s); markNav(s.n); }
+  else  { renderOverview();  markNav(-1); }
+  window.scrollTo(0, 0);
+}
+
+window.addEventListener('hashchange', route);
+
+document.addEventListener('keydown', function(e){
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  var cur = parseInt(location.hash.replace(/^#\/?/, ''), 10);
+  if (e.key === 'Escape'){ location.hash = '#/'; return; }
+  if (e.key === 'ArrowRight'){
+    var nx = isNaN(cur) ? 1 : cur + 1;
+    if (nx <= 12) location.hash = '#/' + nx;
+  }
+  if (e.key === 'ArrowLeft'){
+    if (isNaN(cur)) return;
+    if (cur - 1 >= 1) location.hash = '#/' + (cur - 1); else location.hash = '#/';
+  }
+});
+
+S.sort(function(a,b){ return a.n - b.n; });
+buildNav();
+route();
+setInterval(renderClock, 20000);
+</script>

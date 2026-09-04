@@ -63,6 +63,11 @@
   .pat p{font-size:clamp(.64rem,1.15vh,.98rem);color:var(--muted);line-height:1.3}
   .hint{margin-top:clamp(6px,1.1vh,14px);color:var(--faint);font-size:clamp(.66rem,1.1vh,.95rem)}
   .hint kbd{border:1px solid var(--line2);border-radius:4px;padding:0 6px;color:var(--muted);font-size:.92em}
+  .guides-cta{margin-top:clamp(8px,1.4vh,18px)}
+  .guides-cta a{display:inline-block;padding:.45em 1.1em;border:1px solid var(--gold-soft);border-radius:4px;
+    color:var(--gold);text-decoration:none;font-size:clamp(.7rem,1.15vh,1rem);letter-spacing:.04em}
+  .guides-cta a:hover{background:var(--panel2);border-color:var(--gold)}
+  .guides-cta span{display:block;margin-top:.5em;color:var(--faint);font-size:clamp(.62rem,1vh,.85rem)}
 
   /* portrait / narrow: relax the locked height and stack */
   @media (max-aspect-ratio:13/10){
@@ -151,6 +156,10 @@
       <div class="pat"><h4>The inner three</h4><p>Peter, James &amp; John alone saw the Transfiguration &mdash; and were taken deepest into Gethsemane.</p></div>
     </div>
     <p class="hint">Tap any disciple to open his night &nbsp;&middot;&nbsp; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> move between disciples &nbsp;&middot;&nbsp; <kbd>&uarr;</kbd> <kbd>&darr;</kbd> switch tabs &nbsp;&middot;&nbsp; <kbd>Esc</kbd> back to the map.</p>
+    <div class="guides-cta">
+      <a href="guides/">Leader&rsquo;s guides &rarr;</a>
+      <span>All twelve sessions, with the session clock and the discussion questions.</span>
+    </div>
   </footer>
 </section>
 
