@@ -440,7 +440,7 @@ const D = [
 ];
 
 // ---------- progress: update this one number after each night ----------
-const DISCUSSED = 3;   // sessions 1..DISCUSSED are done; DISCUSSED+1 is up next
+const DISCUSSED = 4;   // sessions 1..DISCUSSED are done; DISCUSSED+1 is up next
 const statusOf = s => s<=DISCUSSED ? 'done' : (s===DISCUSSED+1 ? 'next' : '');
 (()=>{
   const nx = D.find(d=>d.session===DISCUSSED+1);
